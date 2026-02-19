@@ -18,13 +18,13 @@
       >
         <div class="space-y-3">
           <div
-            class="h-3 bg-neutral-100 dark:bg-neutral-800 rounded-full animate-pulse w-1/2"
+            class="h-3 bg-zinc-100 dark:bg-zinc-800 rounded-full animate-pulse w-1/2"
           ></div>
           <div
-            class="h-8 bg-neutral-100 dark:bg-neutral-800 rounded-full animate-pulse w-2/3"
+            class="h-8 bg-zinc-100 dark:bg-zinc-800 rounded-full animate-pulse w-2/3"
           ></div>
           <div
-            class="h-3 bg-neutral-100 dark:bg-neutral-800 rounded-full animate-pulse w-1/3"
+            class="h-3 bg-zinc-100 dark:bg-zinc-800 rounded-full animate-pulse w-1/3"
           ></div>
         </div>
       </UCard>
@@ -42,19 +42,19 @@
         class="lg:col-span-2"
         :ui="{
           body: { padding: 'p-0' },
-          header: { base: 'bg-slate-50/50 dark:bg-slate-900/50' },
+          header: { base: 'bg-zinc-50/50 dark:bg-zinc-800/50' },
         }"
       >
         <template #header>
           <div class="flex justify-between items-center w-full min-w-0">
             <h3
-              class="font-black text-[10px] sm:text-xs uppercase tracking-widest text-neutral-900 dark:text-white flex items-center min-w-0"
+              class="font-black text-[10px] sm:text-xs uppercase tracking-widest text-zinc-900 dark:text-white flex items-center min-w-0"
             >
               <div
-                class="shrink-0 w-10 h-10 sm:w-8 sm:h-8 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center mr-3"
+                class="shrink-0 w-10 h-10 rounded-2xl bg-zinc-100/80 dark:bg-zinc-800 ring-1 ring-zinc-200/50 dark:ring-zinc-700 flex items-center justify-center mr-3 transition-all duration-500 group-hover:dark:ring-zinc-500"
               >
                 <span
-                  class="material-symbols-rounded text-sm text-neutral-500 dark:text-neutral-400"
+                  class="material-symbols-rounded text-xl text-zinc-600 dark:text-white transition-transform duration-500 group-hover:scale-110"
                   >list_alt</span
                 >
               </div>
@@ -85,36 +85,83 @@
         />
 
         <UTable v-else :data="recentOrders" :columns="orderColumns">
-          <template #id-cell="{ row }">
-            <span class="font-mono text-xs text-slate-400">{{
-              row.original.id
-            }}</span>
-          </template>
           <template #customer-cell="{ row }">
-            <span class="font-semibold text-slate-700 dark:text-slate-200">{{
+            <span class="font-bold text-zinc-900 dark:text-white">{{
               row.original.customer
             }}</span>
           </template>
+          <template #date-cell="{ row }">
+            <span class="text-[11px] text-zinc-500 font-medium">
+              {{ formatDateTime(row.original.createdAt) }}
+            </span>
+          </template>
           <template #total-cell="{ row }">
-            <span class="font-bold text-slate-900 dark:text-white"
+            <span class="font-bold text-zinc-900 dark:text-white"
               >₮{{ row.original.total }}</span
             >
           </template>
           <template #status-cell="{ row }">
-            <UBadge
+            <div class="flex flex-col gap-1.5">
+              <div class="flex items-center gap-2">
+                <UBadge
+                  size="xs"
+                  variant="subtle"
+                  :color="
+                    row.original.status === 'completed' ||
+                    row.original.status === 'confirmed'
+                      ? 'success'
+                      : row.original.status === 'pending'
+                        ? 'warning'
+                        : 'zinc'
+                  "
+                  class="font-semibold"
+                >
+                  {{ row.original.statusLabel }}
+                </UBadge>
+                <UBadge
+                  v-if="row.original.needsReview"
+                  size="xs"
+                  color="error"
+                  variant="solid"
+                  class="text-[8px] animate-pulse"
+                >
+                  AI Шалгах
+                </UBadge>
+              </div>
+              <!-- Payment Status Badge (Small) -->
+              <div class="flex items-center gap-1">
+                <div
+                  class="w-1 h-1 rounded-full"
+                  :class="
+                    row.original.paymentStatus === 'paid'
+                      ? 'bg-success-500'
+                      : 'bg-warning-500'
+                  "
+                ></div>
+                <span
+                  class="text-[9px] font-bold uppercase tracking-tighter text-zinc-500"
+                >
+                  {{
+                    row.original.paymentStatus === "paid"
+                      ? "Төлөгдсөн"
+                      : "Төлбөр хүлээгдэж буй"
+                  }}
+                </span>
+              </div>
+            </div>
+          </template>
+          <template #actions-cell="{ row }">
+            <UButton
+              v-if="row.original.status === 'pending'"
               size="xs"
-              variant="subtle"
-              :color="
-                row.original.status === 'Хүргэгдсэн'
-                  ? 'success'
-                  : row.original.status === 'Хүлээгдэж байна'
-                    ? 'warning'
-                    : 'neutral'
-              "
-              class="font-semibold"
+              color="primary"
+              variant="solid"
+              class="font-black rounded-lg"
+              :loading="approvingId === row.original._id"
+              @click="approveOrder(row.original._id)"
             >
-              {{ row.original.status }}
-            </UBadge>
+              Батлах
+            </UButton>
           </template>
         </UTable>
       </UCard>
@@ -130,7 +177,7 @@
           <header class="flex justify-between items-start mb-6">
             <div class="space-y-1">
               <h3
-                class="text-[10px] font-black uppercase tracking-[0.2em] text-neutral-400 dark:text-neutral-500 flex items-center"
+                class="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400 dark:text-zinc-500 flex items-center"
               >
                 <span
                   class="w-1.5 h-1.5 rounded-full bg-primary-500 mr-2 animate-pulse"
@@ -138,22 +185,25 @@
                 AI Систем
               </h3>
               <p
-                class="text-xl font-bold text-neutral-900 dark:text-white tracking-tight"
+                class="text-xl font-bold text-zinc-900 dark:text-white tracking-tight"
               >
                 Хэвийн
               </p>
             </div>
             <div
-              class="w-10 h-10 rounded-2xl bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 flex items-center justify-center text-primary-500 dark:text-primary-400 group-hover:scale-110 group-hover:bg-primary-500 group-hover:text-white transition-all duration-300"
+              class="w-10 h-10 rounded-2xl flex items-center justify-center transition-all duration-500 bg-zinc-100/80 dark:bg-zinc-800 ring-1 ring-zinc-200/50 dark:ring-zinc-700 group-hover:dark:ring-zinc-500 text-primary-500 dark:text-primary-400 group-hover:bg-primary-500 group-hover:text-white"
             >
-              <span class="material-symbols-rounded">smart_toy</span>
+              <span
+                class="material-symbols-rounded text-xl transition-transform duration-500 group-hover:scale-110"
+                >smart_toy</span
+              >
             </div>
           </header>
 
           <div class="space-y-4 mb-8">
             <div class="flex items-center gap-3">
               <div
-                class="w-8 h-8 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center shrink-0"
+                class="w-8 h-8 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center shrink-0"
               >
                 <span class="material-symbols-rounded text-sm text-success-500"
                   >check_circle</span
@@ -161,12 +211,12 @@
               </div>
               <div>
                 <p
-                  class="text-[11px] font-bold text-neutral-700 dark:text-neutral-300"
+                  class="text-[11px] font-bold text-zinc-700 dark:text-zinc-300"
                 >
                   Google Sheets Холболт
                 </p>
                 <p
-                  class="text-[10px] text-neutral-500 uppercase font-black tracking-tighter"
+                  class="text-[10px] text-zinc-500 uppercase font-black tracking-tighter"
                 >
                   Амжилттай холбогдсон
                 </p>
@@ -174,20 +224,20 @@
             </div>
             <div class="flex items-center gap-3">
               <div
-                class="w-8 h-8 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center shrink-0"
+                class="w-8 h-8 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center shrink-0"
               >
-                <span class="material-symbols-rounded text-sm text-neutral-500"
+                <span class="material-symbols-rounded text-sm text-zinc-500"
                   >history</span
                 >
               </div>
               <div>
                 <p
-                  class="text-[11px] font-bold text-neutral-700 dark:text-neutral-300"
+                  class="text-[11px] font-bold text-zinc-700 dark:text-zinc-300"
                 >
                   Синхрончлол
                 </p>
                 <p
-                  class="text-[10px] text-neutral-500 uppercase font-black tracking-tighter"
+                  class="text-[10px] text-zinc-500 uppercase font-black tracking-tighter"
                 >
                   Сүүлд: 14 минутын өмнө
                 </p>
@@ -211,13 +261,13 @@
 
         <UCard :ui="{ body: { padding: 'p-6' } }">
           <h3
-            class="font-bold text-xs uppercase tracking-wider text-neutral-900 dark:text-white mb-4 flex items-center"
+            class="font-black text-xs uppercase tracking-widest text-zinc-900 dark:text-white mb-4 flex items-center"
           >
             <div
-              class="w-8 h-8 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center mr-3"
+              class="w-10 h-10 rounded-2xl bg-zinc-100/80 dark:bg-zinc-800 ring-1 ring-zinc-200/50 dark:ring-zinc-700 flex items-center justify-center mr-3 transition-all duration-500 group-hover:dark:ring-zinc-500"
             >
               <span
-                class="material-symbols-rounded text-sm text-neutral-500 dark:text-neutral-400"
+                class="material-symbols-rounded text-xl text-zinc-600 dark:text-white transition-transform duration-500 group-hover:scale-110"
                 >bolt</span
               >
             </div>
@@ -231,15 +281,15 @@
               @click="showSoonToast('Чат')"
             >
               <div
-                class="absolute top-1 right-1 px-1.5 py-0.5 bg-neutral-100 dark:bg-neutral-800 rounded-md text-[7px] font-black uppercase tracking-tighter text-neutral-400 group-hover:text-primary-500 transition-colors"
+                class="absolute top-1 right-1 px-1.5 py-0.5 bg-zinc-100 dark:bg-zinc-800 rounded-md text-[7px] font-black uppercase tracking-tighter text-zinc-400 group-hover:text-primary-500 transition-colors"
               >
                 Тун удахгүй
               </div>
               <div
-                class="w-10 h-10 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center mb-2 group-hover:bg-primary-500/10 transition-colors"
+                class="w-10 h-10 rounded-2xl bg-zinc-100/80 dark:bg-zinc-800 ring-1 ring-zinc-200/50 dark:ring-zinc-700 flex items-center justify-center mb-2 group-hover:bg-primary-500/10 transition-all duration-500 group-hover:dark:ring-zinc-500"
               >
                 <span
-                  class="material-symbols-rounded text-xl text-neutral-500 dark:text-neutral-400 group-hover:text-primary-500 group-hover:scale-110 transition-all"
+                  class="material-symbols-rounded text-xl text-zinc-500 dark:text-zinc-400 group-hover:text-primary-500 group-hover:scale-110 transition-all duration-500"
                   >forum</span
                 >
               </div>
@@ -252,15 +302,15 @@
               @click="showSoonToast('Тайлан')"
             >
               <div
-                class="absolute top-1 right-1 px-1.5 py-0.5 bg-neutral-100 dark:bg-neutral-800 rounded-md text-[7px] font-black uppercase tracking-tighter text-neutral-400 group-hover:text-primary-500 transition-colors"
+                class="absolute top-1 right-1 px-1.5 py-0.5 bg-zinc-100 dark:bg-zinc-800 rounded-md text-[7px] font-black uppercase tracking-tighter text-zinc-400 group-hover:text-primary-500 transition-colors"
               >
                 Тун удахгүй
               </div>
               <div
-                class="w-10 h-10 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center mb-2 group-hover:bg-primary-500/10 transition-colors"
+                class="w-10 h-10 rounded-2xl bg-zinc-100/80 dark:bg-zinc-800 ring-1 ring-zinc-200/50 dark:ring-zinc-700 flex items-center justify-center mb-2 group-hover:bg-primary-500/10 transition-all duration-500 group-hover:dark:ring-zinc-500"
               >
                 <span
-                  class="material-symbols-rounded text-xl text-neutral-500 dark:text-neutral-400 group-hover:text-primary-500 group-hover:scale-110 transition-all"
+                  class="material-symbols-rounded text-xl text-zinc-500 dark:text-zinc-400 group-hover:text-primary-500 group-hover:scale-110 transition-all duration-500"
                   >analytics</span
                 >
               </div>
@@ -292,14 +342,46 @@ const stats = computed(
 const recentOrders = computed(() => data.value?.data?.recentOrders || []);
 
 const orderColumns = [
-  { accessorKey: "id", header: "ID" },
   { accessorKey: "customer", header: "Хэрэглэгч" },
+  { accessorKey: "date", header: "Огноо" },
   { accessorKey: "items", header: "Бараа" },
   { accessorKey: "total", header: "Дүн" },
   { accessorKey: "status", header: "Төлөв" },
+  { accessorKey: "actions", header: "Үйлдэл" },
 ];
 
 const toast = useToast();
+const approvingId = ref(null);
+
+const approveOrder = async (id) => {
+  approvingId.value = id;
+  try {
+    const response = await $fetch(
+      `${config.public.apiBase}/orders/${id}/approve`,
+      {
+        method: "POST",
+      },
+    );
+
+    if (response.success) {
+      toast.add({
+        title: "Амжилттай",
+        description: "Захиалга баталгаажиж, Google Sheets рүү илгээгдлэв.",
+        color: "green",
+      });
+      refresh();
+    }
+  } catch (error) {
+    console.error("Approval failed:", error);
+    toast.add({
+      title: "Алдаа",
+      description: error.data?.message || "Баталгаажуулахад алдаа гарлаа.",
+      color: "red",
+    });
+  } finally {
+    approvingId.value = null;
+  }
+};
 
 const showSoonToast = (feature) => {
   toast.add({

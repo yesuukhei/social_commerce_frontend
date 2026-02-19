@@ -5,11 +5,11 @@
     >
       <div>
         <h1
-          class="text-3xl font-bold tracking-tight text-neutral-900 dark:text-white"
+          class="text-3xl font-black tracking-tight text-zinc-900 dark:text-white"
         >
           Захиалга
         </h1>
-        <p class="text-sm text-neutral-500 mt-2">
+        <p class="text-sm text-zinc-500 font-medium mt-2">
           Бүх цаг үеийн захиалгын түүх
         </p>
       </div>
@@ -30,19 +30,19 @@
       <div class="p-6 space-y-4">
         <div v-for="i in 5" :key="i" class="flex gap-4 items-center">
           <div
-            class="h-4 bg-neutral-100 dark:bg-neutral-800 rounded animate-pulse w-16"
+            class="h-4 bg-zinc-100 dark:bg-zinc-800 rounded animate-pulse w-16"
           ></div>
           <div
-            class="h-4 bg-neutral-100 dark:bg-neutral-800 rounded animate-pulse w-24"
+            class="h-4 bg-zinc-100 dark:bg-zinc-800 rounded animate-pulse w-24"
           ></div>
           <div
-            class="h-4 bg-neutral-100 dark:bg-neutral-800 rounded animate-pulse flex-1"
+            class="h-4 bg-zinc-100 dark:bg-zinc-800 rounded animate-pulse flex-1"
           ></div>
           <div
-            class="h-4 bg-neutral-100 dark:bg-neutral-800 rounded animate-pulse w-20"
+            class="h-4 bg-zinc-100 dark:bg-zinc-800 rounded animate-pulse w-20"
           ></div>
           <div
-            class="h-6 bg-neutral-100 dark:bg-neutral-800 rounded-full animate-pulse w-24"
+            class="h-6 bg-zinc-100 dark:bg-zinc-800 rounded-full animate-pulse w-24"
           ></div>
         </div>
       </div>
@@ -72,18 +72,18 @@
     <!-- Orders Table -->
     <UCard v-else :ui="{ body: { padding: 'p-0' } }">
       <UTable :data="orders" :columns="columns">
-        <template #id-cell="{ row }">
-          <span class="font-mono text-xs text-neutral-400"
-            >#{{ row.original.id }}</span
-          >
-        </template>
         <template #customer-cell="{ row }">
-          <span class="font-semibold text-neutral-700 dark:text-neutral-200">{{
+          <span class="font-bold text-zinc-900 dark:text-white">{{
             row.original.customer
           }}</span>
         </template>
+        <template #date-cell="{ row }">
+          <span class="text-[11px] text-zinc-500 font-medium">
+            {{ formatDateTime(row.original.createdAt) }}
+          </span>
+        </template>
         <template #total-cell="{ row }">
-          <span class="font-bold text-neutral-900 dark:text-white"
+          <span class="font-bold text-zinc-900 dark:text-white"
             >₮{{ row.original.total }}</span
           >
         </template>
@@ -94,8 +94,41 @@
             :color="getStatusColor(row.original.status)"
             class="font-semibold"
           >
-            {{ row.original.status }}
+            {{ row.original.statusLabel }}
           </UBadge>
+        </template>
+        <template #payment-cell="{ row }">
+          <div class="flex flex-col gap-1">
+            <UBadge
+              size="xs"
+              variant="subtle"
+              :color="
+                row.original.paymentStatus === 'paid' ? 'success' : 'warning'
+              "
+              class="font-semibold w-fit"
+            >
+              {{
+                row.original.paymentStatus === "paid"
+                  ? "Төлөгдсөн"
+                  : "Төлөгдөөгүй"
+              }}
+            </UBadge>
+            <span
+              class="text-[10px] text-zinc-400 font-bold uppercase tracking-tighter"
+            >
+              {{ row.original.paymentMethod === "qpay" ? "QPay" : "Бэлнээр" }}
+            </span>
+          </div>
+        </template>
+        <template #delivery-cell="{ row }">
+          <div class="flex items-center gap-2">
+            <span class="material-symbols-rounded text-sm text-zinc-400">
+              {{ row.original.hasDelivery ? "local_shipping" : "store" }}
+            </span>
+            <span class="text-xs text-zinc-600 dark:text-zinc-300 font-medium">
+              {{ row.original.hasDelivery ? "Хүргэлт" : "Очиж авах" }}
+            </span>
+          </div>
         </template>
       </UTable>
     </UCard>
@@ -111,23 +144,41 @@ const { data, pending, error } = await useFetch(
 const orders = computed(() => data.value?.data?.recentOrders || []);
 
 const columns = [
-  { accessorKey: "id", header: "ID" },
   { accessorKey: "customer", header: "Хэрэглэгч" },
+  { accessorKey: "date", header: "Огноо" },
   { accessorKey: "items", header: "Бараа" },
   { accessorKey: "total", header: "Дүн" },
+  { accessorKey: "payment", header: "Төлбөр" },
+  { accessorKey: "delivery", header: "Хүргэлт" },
   { accessorKey: "status", header: "Төлөв" },
 ];
 
+const statusTranslations = {
+  pending: "Хүлээгдэж байна",
+  confirmed: "Баталгаажсан",
+  processing: "Бэлтгэгдэж байна",
+  shipped: "Хүргэлтэд гарсан",
+  delivered: "Хүргэгдсэн",
+  completed: "Дууссан",
+  cancelled: "Цуцлагдсан",
+};
+
 const getStatusColor = (status) => {
   switch (status) {
-    case "Хүргэгдсэн":
+    case "delivered":
+    case "completed":
       return "success";
-    case "Баталгаажсан":
+    case "confirmed":
+    case "processing":
       return "primary";
-    case "Хүлээгдэж байна":
+    case "shipped":
+      return "blue";
+    case "pending":
       return "warning";
+    case "cancelled":
+      return "error";
     default:
-      return "neutral";
+      return "zinc";
   }
 };
 </script>

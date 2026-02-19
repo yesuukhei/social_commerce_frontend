@@ -1,7 +1,5 @@
 <template>
-  <section
-    class="relative overflow-hidden rounded-3xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 p-6 sm:px-10 sm:py-8 shadow-xl dark:shadow-2xl transition-all duration-500 group"
-  >
+  <UCard class="bg-zinc-200 dark:bg-zinc-700">
     <!-- Background Aurora Effects -->
     <div
       class="absolute -right-20 -top-20 w-80 h-80 bg-primary-500/10 dark:bg-primary-500/20 rounded-full blur-[100px] group-hover:bg-primary-500/20 dark:group-hover:bg-primary-500/30 transition-all duration-1000"
@@ -28,7 +26,7 @@
           </div>
 
           <h1
-            class="text-3xl sm:text-4xl font-black text-neutral-900 dark:text-white tracking-tight"
+            class="text-3xl sm:text-4xl font-black text-zinc-900 dark:text-white tracking-tight"
           >
             {{ title }}
             <span class="text-primary-600 dark:text-primary-400"
@@ -44,7 +42,7 @@
             :to="actionTo"
             variant="ghost"
             color="neutral"
-            class="group/btn !rounded-full px-0 hover:bg-transparent font-bold text-sm text-neutral-500 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
+            class="group/btn !rounded-full px-0 hover:bg-transparent font-bold text-sm text-zinc-500 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
           >
             <span
               v-if="actionIcon"
@@ -71,7 +69,7 @@
         />
       </div>
     </div>
-  </section>
+  </UCard>
 </template>
 
 <script setup lang="ts">

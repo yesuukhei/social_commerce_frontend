@@ -75,7 +75,7 @@ body {
 
 /* Scrollbar-ыг профессонал болгох (Minimalist UX) */
 ::-webkit-scrollbar {
-  width: 6px;
+  width: 3px;
 }
 ::-webkit-scrollbar-track {
   @apply bg-transparent;

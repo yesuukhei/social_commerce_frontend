@@ -1,10 +1,10 @@
 export default defineAppConfig({
   ui: {
     colors: {
-      primary: "indigo",
-      neutral: "slate",
-      success: "emerald",
-      warning: "amber",
+      primary: "violet",
+      neutral: "zinc",
+      success: "teal",
+      warning: "orange",
       error: "rose",
     },
 
@@ -26,16 +26,16 @@ export default defineAppConfig({
 
     card: {
       slots: {
-        root: "rounded-3xl border-slate-200/60 dark:border-slate-800/50 bg-white dark:bg-slate-900",
-        header: "border-b border-slate-200/60 dark:border-slate-800/50 p-6",
+        root: "rounded-3xl border-zinc-200/60 dark:border-zinc-700 bg-white dark:bg-zinc-800",
+        header: "border-b border-zinc-200/60 dark:border-zinc-700 p-6",
         body: "p-6",
-        footer: "border-t border-slate-200/60 dark:border-slate-800/50 p-6",
+        footer: "border-t border-zinc-200/60 dark:border-zinc-700 p-6",
       },
     },
 
     input: {
       slots: {
-        base: "font-medium transition-all !rounded-full  border-slate-200/60 dark:border-slate-800/50 focus:ring-primary-300",
+        base: "font-medium transition-all !rounded-full border-zinc-200/60 dark:border-zinc-700 focus:ring-primary-300 dark:bg-zinc-900",
       },
       variants: {
         size: {
@@ -53,13 +53,13 @@ export default defineAppConfig({
 
     alert: {
       slots: {
-        root: "rounded-3xl p-5 border border-slate-200/60 dark:border-slate-800/50",
+        root: "rounded-3xl p-5 border border-zinc-200/60 dark:border-zinc-700",
       },
     },
 
     textarea: {
       slots: {
-        base: "font-medium transition-all !rounded-3xl  border-slate-200/60 dark:border-slate-800/50 focus:ring-primary-300",
+        base: "font-medium transition-all !rounded-3xl border-zinc-200/60 dark:border-zinc-700 focus:ring-primary-300 dark:bg-zinc-900",
       },
       variants: {
         size: {
@@ -72,28 +72,28 @@ export default defineAppConfig({
 
     select: {
       slots: {
-        base: "rounded-full font-medium px-4  border-slate-200/60 dark:border-slate-800/50 focus:ring-primary-500",
+        base: "rounded-full font-medium px-4 border-zinc-200/60 dark:border-zinc-700 focus:ring-primary-500 dark:bg-zinc-900",
       },
     },
 
     modal: {
       slots: {
-        overlay: "bg-slate-950/60 backdrop-blur-[2px]",
+        overlay: "bg-zinc-950/70 backdrop-blur-md",
         content:
-          "rounded-3xl  border-slate-200/60 dark:border-slate-800/50 bg-white dark:bg-slate-900",
+          "rounded-3xl border border-zinc-200/60 dark:border-zinc-700 bg-white dark:bg-zinc-950",
       },
     },
 
     avatar: {
       slots: {
-        root: "rounded-full ring-2 ring-white dark:ring-slate-800",
+        root: "rounded-full ring-2 ring-white dark:ring-zinc-700",
       },
     },
 
     dropdown: {
       slots: {
         content:
-          "rounded-2xl p-1  border-slate-200/60 dark:border-slate-800/50 bg-white dark:bg-slate-900 shadow-lg",
+          "rounded-2xl p-1 border border-zinc-200/60 dark:border-zinc-700 bg-white dark:bg-zinc-800",
         item: "rounded-xl font-medium",
       },
     },
