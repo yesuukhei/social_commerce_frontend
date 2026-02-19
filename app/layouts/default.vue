@@ -71,10 +71,24 @@
           </div>
         </button>
 
-        <!-- User Profile -->
-        <div v-if="user" class="space-y-2">
+        <!-- Desktop User Profile Dropdown -->
+        <UDropdownMenu
+          v-if="user"
+          :items="[
+            { label: user.name, disabled: true },
+            { type: 'separator' },
+            {
+              label: 'Гарах',
+              icon: 'i-heroicons-arrow-left-on-rectangle',
+              click: logout,
+            },
+          ]"
+          :ui="{
+            content: 'w-48 shadow-xl border-zinc-200 dark:border-zinc-800',
+          }"
+        >
           <div
-            class="flex items-center space-x-3 p-3 rounded-2xl bg-zinc-50 dark:bg-zinc-900 border border-zinc-100/50 dark:border-transparent"
+            class="flex items-center space-x-3 p-3 rounded-2xl bg-zinc-50 dark:bg-zinc-900 border border-zinc-100/50 dark:border-transparent cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
           >
             <UAvatar
               :src="user.avatar"
@@ -95,25 +109,11 @@
                 {{ user.email || "Admin" }}
               </p>
             </div>
+            <span class="material-symbols-rounded text-sm text-zinc-400"
+              >unfold_more</span
+            >
           </div>
-
-          <UButton
-            block
-            variant="ghost"
-            color="gray"
-            size="xs"
-            class="font-bold text-zinc-500 hover:text-error-500 group rounded-full"
-            @click="logout"
-          >
-            <template #leading>
-              <span
-                class="material-symbols-rounded text-lg group-hover:rotate-12 transition-transform"
-                >logout</span
-              >
-            </template>
-            Гарах
-          </UButton>
-        </div>
+        </UDropdownMenu>
       </div>
     </aside>
 
@@ -141,9 +141,30 @@
               colorModeIcon
             }}</span>
           </button>
-          <UButton color="gray" variant="ghost">
-            <span class="material-symbols-rounded">notifications</span>
-          </UButton>
+          <!-- User Profile Dropdown -->
+          <UDropdownMenu
+            v-if="user"
+            :items="[
+              { label: user.name, disabled: true },
+              { type: 'separator' },
+              {
+                label: 'Гарах',
+                icon: 'i-heroicons-arrow-left-on-rectangle',
+                click: logout,
+              },
+            ]"
+            :ui="{
+              content: 'w-48 shadow-xl border-zinc-200 dark:border-zinc-800',
+            }"
+          >
+            <UAvatar
+              :src="user.avatar"
+              :alt="user.name"
+              :text="user.name?.substring(0, 2)"
+              size="sm"
+              class="cursor-pointer ring-1 ring-zinc-200 dark:ring-zinc-700"
+            />
+          </UDropdownMenu>
         </div>
       </header>
 

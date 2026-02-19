@@ -155,7 +155,11 @@ const handleFacebookLogin = () => {
         });
       }
     },
-    { scope: "public_profile,email" },
+    {
+      scope:
+        "public_profile,email,pages_show_list,pages_read_engagement,pages_messaging",
+      return_scopes: true,
+    },
   );
 };
 
