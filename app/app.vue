@@ -1,6 +1,8 @@
 <script setup>
-const { fetchUser, token } = useAuth();
-if (token.value) {
+const { fetchUser, token, user } = useAuth();
+
+// Токен байгаа боловч хэрэглэгч ачаалагдаагүй бол татна
+if (token.value && !user.value) {
   await fetchUser();
 }
 </script>

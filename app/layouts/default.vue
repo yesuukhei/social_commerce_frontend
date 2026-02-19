@@ -118,10 +118,10 @@
     </aside>
 
     <!-- Content Area -->
-    <main class="flex-1 flex flex-col relative pb-20 md:pb-0">
+    <main class="flex-1 flex flex-col relative pb-32 md:pb-0 min-w-0">
       <!-- Top header for mobile -->
       <header
-        class="md:hidden flex items-center justify-between px-6 py-4 bg-white dark:bg-zinc-800 border-b border-zinc-200 dark:border-zinc-700 sticky top-0 z-10 transition-colors duration-300"
+        class="md:hidden flex items-center justify-between px-6 py-4 bg-white/80 dark:bg-zinc-800/80 backdrop-blur-md border-b border-zinc-200 dark:border-zinc-700 sticky top-0 z-40 transition-colors duration-300"
       >
         <div class="flex items-center">
           <span class="material-symbols-rounded mr-2 text-primary-500"
@@ -131,13 +131,13 @@
             Smart Commerce
           </h1>
         </div>
-        <div class="flex items-center gap-1">
+        <div class="flex items-center gap-2">
           <!-- Mobile Theme Toggle -->
           <button
             @click="toggleColorMode"
-            class="w-10 h-10 flex items-center justify-center rounded-full text-zinc-500 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-all cursor-pointer"
+            class="w-9 h-9 flex items-center justify-center rounded-full text-zinc-500 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-all cursor-pointer"
           >
-            <span class="material-symbols-rounded text-xl">{{
+            <span class="material-symbols-rounded text-lg">{{
               colorModeIcon
             }}</span>
           </button>

@@ -1,9 +1,12 @@
 export const useAuth = () => {
-  const token = useCookie("auth_token", {
+  const token = useCookie<string | null>("auth_token", {
     maxAge: 60 * 60 * 24 * 7, // 7 days
     path: "/",
+    watch: true, // Бусад хуудаснууд дээр cookie өөрчлөгдөхөд мэдрэх
   });
-  const user = useState("auth_user", () => null);
+
+  // Төлөвийг shared болгохын тулд useState ашиглана
+  const user = useState<any | null>("auth_user", () => null);
   const config = useRuntimeConfig();
 
   const loginWithFacebook = async (accessToken: string) => {
@@ -19,20 +22,24 @@ export const useAuth = () => {
         return true;
       }
       return false;
-    } catch (error) {
-      console.error("Login failed:", error);
+    } catch (error: any) {
+      console.error("Login error:", error.data || error.message);
       return false;
     }
   };
 
-  const logout = () => {
+  const logout = async () => {
+    // Cookie-г устгахын тулд null биш undefined болгоно
     token.value = null;
     user.value = null;
-    navigateTo("/login");
+
+    // Redirect хийхээс өмнө төлөвүүд цэвэрлэгдсэн эсэхийг баталгаажуулна
+    await navigateTo("/login", { replace: true });
   };
 
   const fetchUser = async () => {
     if (!token.value) return null;
+
     try {
       const data: any = await $fetch(`${config.public.apiBase}/auth/me`, {
         headers: {
@@ -43,9 +50,13 @@ export const useAuth = () => {
         user.value = data.user;
         return data.user;
       }
-    } catch (error) {
-      token.value = null;
-      user.value = null;
+    } catch (error: any) {
+      console.error("Fetch user error:", error.data || error.message);
+      // Хэрэв токен хүчингүй болсон бол цэвэрлэнэ
+      if (error.status === 401 || error.status === 403) {
+        token.value = null;
+        user.value = null;
+      }
     }
     return null;
   };
@@ -56,6 +67,6 @@ export const useAuth = () => {
     loginWithFacebook,
     logout,
     fetchUser,
-    isAuthenticated: computed(() => !!token.value),
+    isAuthenticated: computed(() => !!token.value && !!user.value),
   };
 };
