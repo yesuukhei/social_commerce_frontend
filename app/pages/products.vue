@@ -229,6 +229,7 @@
 <script setup>
 const config = useRuntimeConfig();
 const toast = useToast();
+const { token } = useAuth();
 const search = ref("");
 const debouncedSearch = ref("");
 const showInactive = ref(false);
@@ -246,6 +247,9 @@ watch(search, (val) => {
 const { data, pending, refresh } = await useFetch(
   () => `${config.public.apiBase}/products`,
   {
+    headers: {
+      Authorization: `Bearer ${token.value}`,
+    },
     query: computed(() => ({
       search: debouncedSearch.value || undefined,
       isActive: showInactive.value ? "false" : "true",
@@ -274,6 +278,9 @@ const syncFromSheets = async () => {
   try {
     const response = await $fetch(`${config.public.apiBase}/sync/products`, {
       method: "POST",
+      headers: {
+        Authorization: `Bearer ${token.value}`,
+      },
     });
 
     if (response.success) {

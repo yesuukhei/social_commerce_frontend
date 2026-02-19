@@ -137,8 +137,14 @@
 
 <script setup>
 const config = useRuntimeConfig();
-const { data, pending, error } = await useFetch(
-  `${config.public.apiBase}/stats`,
+const { token } = useAuth();
+const { data, pending, error, refresh } = await useFetch(
+  `${config.public.apiBase}/orders`,
+  {
+    headers: {
+      Authorization: `Bearer ${token.value}`,
+    },
+  },
 );
 
 const orders = computed(() => data.value?.data?.recentOrders || []);

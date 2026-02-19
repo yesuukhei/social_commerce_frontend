@@ -28,6 +28,8 @@ export default defineNuxtConfig({
   runtimeConfig: {
     public: {
       apiBase: process.env.NUXT_PUBLIC_API_BASE || "http://localhost:4005/api",
+      facebookAppId:
+        process.env.NUXT_PUBLIC_FACEBOOK_APP_ID || "2570471213413982",
     },
   },
   devtools: { enabled: true },

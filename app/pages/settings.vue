@@ -322,6 +322,7 @@ const analysisResult = ref(null);
 const analyzing = ref(false);
 const copied = ref(false);
 const config = useRuntimeConfig();
+const { token } = useAuth();
 
 const confirmMapping = () => {
   if (analysisResult.value?.mapping?.mapping) {
@@ -342,6 +343,9 @@ const analyzeSheet = async () => {
   try {
     const response = await $fetch(`${config.public.apiBase}/sync/analyze`, {
       method: "POST",
+      headers: {
+        Authorization: `Bearer ${token.value}`,
+      },
       body: { sheetUrl: sheetUrl.value },
     });
     if (response.success) {
@@ -367,7 +371,11 @@ const analyzeSheet = async () => {
 // Load initial settings
 onMounted(async () => {
   try {
-    const response = await $fetch(`${config.public.apiBase}/stores/settings`);
+    const response = await $fetch(`${config.public.apiBase}/stores/settings`, {
+      headers: {
+        Authorization: `Bearer ${token.value}`,
+      },
+    });
     if (response.success) {
       sheetUrl.value = response.data.sheetUrl || "";
       instructions.value = response.data.customInstructions || "";
@@ -410,6 +418,9 @@ const saveSettings = async () => {
   try {
     const response = await $fetch(`${config.public.apiBase}/stores/settings`, {
       method: "PATCH",
+      headers: {
+        Authorization: `Bearer ${token.value}`,
+      },
       body: {
         customInstructions: instructions.value,
         sheetUrl: sheetUrl.value,
@@ -452,9 +463,11 @@ const testConnection = async () => {
   status.value = null;
 
   try {
-    const config = useRuntimeConfig();
     const response = await $fetch(`${config.public.apiBase}/sync/verify`, {
       method: "POST",
+      headers: {
+        Authorization: `Bearer ${token.value}`,
+      },
       body: { sheetUrl: sheetUrl.value },
     });
 

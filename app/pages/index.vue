@@ -325,8 +325,14 @@
 
 <script setup>
 const config = useRuntimeConfig();
+const { token } = useAuth();
 const { data, pending, error, refresh } = await useFetch(
   `${config.public.apiBase}/stats`,
+  {
+    headers: {
+      Authorization: `Bearer ${token.value}`,
+    },
+  },
 );
 
 const stats = computed(

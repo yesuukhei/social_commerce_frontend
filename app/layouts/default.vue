@@ -72,20 +72,47 @@
         </button>
 
         <!-- User Profile -->
-        <div
-          class="flex items-center space-x-3 p-3 rounded-2xl bg-zinc-50 dark:bg-zinc-900 border border-zinc-100/50 dark:border-transparent"
-        >
-          <UAvatar text="АХ" size="sm" />
-          <div class="overflow-hidden">
-            <p class="text-sm font-bold text-zinc-900 dark:text-white truncate">
-              Админ
-            </p>
-            <p
-              class="text-[10px] text-zinc-500 dark:text-zinc-500 truncate uppercase font-bold tracking-tight"
-            >
-              admin@shop.mn
-            </p>
+        <div v-if="user" class="space-y-2">
+          <div
+            class="flex items-center space-x-3 p-3 rounded-2xl bg-zinc-50 dark:bg-zinc-900 border border-zinc-100/50 dark:border-transparent"
+          >
+            <UAvatar
+              :src="user.avatar"
+              :alt="user.name"
+              :text="user.name?.substring(0, 2)"
+              size="sm"
+              class="ring-1 ring-zinc-200 dark:ring-zinc-700"
+            />
+            <div class="overflow-hidden flex-1">
+              <p
+                class="text-xs font-bold text-zinc-900 dark:text-white truncate"
+              >
+                {{ user.name }}
+              </p>
+              <p
+                class="text-[9px] text-zinc-500 dark:text-zinc-500 truncate uppercase font-bold tracking-tight"
+              >
+                {{ user.email || "Admin" }}
+              </p>
+            </div>
           </div>
+
+          <UButton
+            block
+            variant="ghost"
+            color="gray"
+            size="xs"
+            class="font-bold text-zinc-500 hover:text-error-500 group rounded-full"
+            @click="logout"
+          >
+            <template #leading>
+              <span
+                class="material-symbols-rounded text-lg group-hover:rotate-12 transition-transform"
+                >logout</span
+              >
+            </template>
+            Гарах
+          </UButton>
         </div>
       </div>
     </aside>
@@ -157,6 +184,7 @@
 
 <script setup>
 const colorMode = useColorMode();
+const { user, logout } = useAuth();
 
 const isDark = computed(() => colorMode.value === "dark");
 
