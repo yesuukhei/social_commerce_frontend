@@ -133,8 +133,7 @@
           </div>
         </template>
         <template #total-cell="{ row }">
-          <span
-            class="font-bold bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 px-2 py-1 rounded-md text-xs border border-green-200 dark:border-green-800"
+          <span class="font-bold px-2 py-1 rounded-md text-xs"
             >₮{{ row.original.totalAmount?.toLocaleString() || 0 }}</span
           >
         </template>
@@ -142,42 +141,53 @@
           <UBadge
             size="xs"
             variant="subtle"
-            :color="getStatusColor(row.original.status)"
+            :color="row.original.status === 'completed' ? 'success' : 'warning'"
             class="font-semibold"
           >
-            {{ row.original.statusLabel }}
+            {{
+              row.original.status === "completed"
+                ? "Баталгаажсан"
+                : "Хүлээгдэж байна"
+            }}
           </UBadge>
         </template>
-        <template #payment-cell="{ row }">
-          <div class="flex flex-col gap-1">
-            <UBadge
-              size="xs"
-              variant="subtle"
-              :color="
-                row.original.paymentStatus === 'paid' ? 'success' : 'warning'
-              "
-              class="font-semibold w-fit"
-            >
-              {{
-                row.original.paymentStatus === "paid"
-                  ? "Төлөгдсөн"
-                  : "Төлөгдөөгүй"
-              }}
-            </UBadge>
-            <span
-              class="text-[10px] text-zinc-400 font-bold uppercase tracking-tighter"
-            >
-              {{ row.original.paymentMethod === "qpay" ? "QPay" : "Бэлнээр" }}
-            </span>
-          </div>
-        </template>
         <template #delivery-cell="{ row }">
-          <div class="flex items-center gap-2">
-            <span class="material-symbols-rounded text-sm text-zinc-400">
-              {{ row.original.hasDelivery ? "local_shipping" : "store" }}
+          <div class="flex flex-col gap-0.5">
+            <div class="flex items-center gap-1.5">
+              <span
+                class="material-symbols-rounded text-sm"
+                :class="
+                  row.original.hasDelivery
+                    ? 'text-primary-500'
+                    : 'text-zinc-400'
+                "
+              >
+                {{ row.original.hasDelivery ? "local_shipping" : "store" }}
+              </span>
+              <span
+                class="text-xs font-bold"
+                :class="
+                  row.original.hasDelivery
+                    ? 'text-primary-600 dark:text-primary-400'
+                    : 'text-zinc-600 dark:text-zinc-300'
+                "
+              >
+                {{ row.original.hasDelivery ? "Хүргэлт" : "Очиж авах" }}
+              </span>
+            </div>
+            <span
+              v-if="row.original.hasDelivery && row.original.address"
+              class="text-[10px] text-zinc-500 dark:text-zinc-400 max-w-[160px] truncate leading-tight"
+            >
+              {{ row.original.address }}
             </span>
-            <span class="text-xs text-zinc-600 dark:text-zinc-300 font-medium">
-              {{ row.original.hasDelivery ? "Хүргэлт" : "Очиж авах" }}
+            <span
+              v-else-if="
+                !row.original.hasDelivery && row.original.pickupAddress
+              "
+              class="text-[10px] text-zinc-500 dark:text-zinc-400 max-w-[160px] truncate leading-tight"
+            >
+              {{ row.original.pickupAddress }}
             </span>
           </div>
         </template>
@@ -185,8 +195,7 @@
           <div class="flex flex-col gap-2">
             <UButton
               v-if="
-                (row.original.status === 'pending' ||
-                  row.original.status === 'confirmed') &&
+                row.original.status === 'pending' &&
                 row.original.paymentMethod === 'qpay' &&
                 row.original.paymentStatus !== 'paid'
               "
@@ -200,10 +209,7 @@
               Төлбөр шалгах
             </UButton>
             <UButton
-              v-if="
-                row.original.status === 'pending' ||
-                row.original.status === 'confirmed'
-              "
+              v-if="row.original.status === 'pending'"
               size="xs"
               color="primary"
               variant="solid"
@@ -239,40 +245,10 @@ const columns = [
   { accessorKey: "date", header: "Огноо" },
   { accessorKey: "items", header: "Бараа" },
   { accessorKey: "total", header: "Дүн" },
-  { accessorKey: "payment", header: "Төлбөр" },
   { accessorKey: "delivery", header: "Хүргэлт" },
   { accessorKey: "status", header: "Төлөв" },
   { accessorKey: "actions", header: "Үйлдэл" },
 ];
-
-const statusTranslations = {
-  pending: "Хүлээгдэж байна",
-  confirmed: "Баталгаажсан",
-  processing: "Бэлтгэгдэж байна",
-  shipped: "Хүргэлтэд гарсан",
-  delivered: "Хүргэгдсэн",
-  completed: "Дууссан",
-  cancelled: "Цуцлагдсан",
-};
-
-const getStatusColor = (status) => {
-  switch (status) {
-    case "delivered":
-    case "completed":
-      return "success";
-    case "confirmed":
-    case "processing":
-      return "primary";
-    case "shipped":
-      return "blue";
-    case "pending":
-      return "warning";
-    case "cancelled":
-      return "error";
-    default:
-      return "zinc";
-  }
-};
 
 const toast = useToast();
 const checkingPaymentId = ref(null);

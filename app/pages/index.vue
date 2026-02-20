@@ -97,9 +97,6 @@
                 <span class="font-bold text-zinc-900 dark:text-white text-sm">{{
                   row.original.customer?.name || "Тодорхойгүй"
                 }}</span>
-                <span class="text-[10px] text-zinc-500 font-medium"
-                  >FB: {{ row.original.customer?.facebookId || "---" }}</span
-                >
               </div>
             </div>
           </template>
@@ -148,10 +145,49 @@
             </div>
           </template>
           <template #total-cell="{ row }">
-            <span
-              class="font-bold bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 px-2 py-1 rounded-md text-xs border border-green-200 dark:border-green-800"
+            <span class="font-bold px-2 py-1 text-xs"
               >₮{{ row.original.totalAmount?.toLocaleString() || 0 }}</span
             >
+          </template>
+          <template #delivery-cell="{ row }">
+            <div class="flex flex-col gap-0.5">
+              <div class="flex items-center gap-1.5">
+                <span
+                  class="material-symbols-rounded text-sm"
+                  :class="
+                    row.original.hasDelivery
+                      ? 'text-primary-500'
+                      : 'text-zinc-400'
+                  "
+                >
+                  {{ row.original.hasDelivery ? "local_shipping" : "store" }}
+                </span>
+                <span
+                  class="text-xs font-bold"
+                  :class="
+                    row.original.hasDelivery
+                      ? 'text-primary-600 dark:text-primary-400'
+                      : 'text-zinc-600 dark:text-zinc-300'
+                  "
+                >
+                  {{ row.original.hasDelivery ? "Хүргэлт" : "Очиж авах" }}
+                </span>
+              </div>
+              <span
+                v-if="row.original.hasDelivery && row.original.address"
+                class="text-[10px] text-zinc-500 dark:text-zinc-400 max-w-[150px] truncate leading-tight"
+              >
+                {{ row.original.address }}
+              </span>
+              <span
+                v-else-if="
+                  !row.original.hasDelivery && row.original.pickupAddress
+                "
+                class="text-[10px] text-zinc-500 dark:text-zinc-400 max-w-[150px] truncate leading-tight"
+              >
+                {{ row.original.pickupAddress }}
+              </span>
+            </div>
           </template>
           <template #status-cell="{ row }">
             <div class="flex flex-col gap-1.5">
@@ -160,16 +196,15 @@
                   size="xs"
                   variant="subtle"
                   :color="
-                    row.original.status === 'completed' ||
-                    row.original.status === 'confirmed'
-                      ? 'success'
-                      : row.original.status === 'pending'
-                        ? 'warning'
-                        : 'zinc'
+                    row.original.status === 'completed' ? 'success' : 'warning'
                   "
                   class="font-semibold"
                 >
-                  {{ row.original.statusLabel }}
+                  {{
+                    row.original.status === "completed"
+                      ? "Баталгаажсан"
+                      : "Хүлээгдэж байна"
+                  }}
                 </UBadge>
                 <UBadge
                   v-if="row.original.needsReview"
@@ -181,34 +216,13 @@
                   AI Шалгах
                 </UBadge>
               </div>
-              <!-- Payment Status Badge (Small) -->
-              <div class="flex items-center gap-1">
-                <div
-                  class="w-1 h-1 rounded-full"
-                  :class="
-                    row.original.paymentStatus === 'paid'
-                      ? 'bg-success-500'
-                      : 'bg-warning-500'
-                  "
-                ></div>
-                <span
-                  class="text-[9px] font-bold uppercase tracking-tighter text-zinc-500"
-                >
-                  {{
-                    row.original.paymentStatus === "paid"
-                      ? "Төлөгдсөн"
-                      : "Төлбөр хүлээгдэж буй"
-                  }}
-                </span>
-              </div>
             </div>
           </template>
           <template #actions-cell="{ row }">
             <div class="flex flex-col gap-2">
               <UButton
                 v-if="
-                  (row.original.status === 'pending' ||
-                    row.original.status === 'confirmed') &&
+                  row.original.status === 'pending' &&
                   row.original.paymentMethod === 'qpay' &&
                   row.original.paymentStatus !== 'paid'
                 "
@@ -222,10 +236,7 @@
                 Төлбөр шалгах
               </UButton>
               <UButton
-                v-if="
-                  row.original.status === 'pending' ||
-                  row.original.status === 'confirmed'
-                "
+                v-if="row.original.status === 'pending'"
                 size="xs"
                 color="primary"
                 variant="solid"
@@ -430,6 +441,7 @@ const orderColumns = [
   { accessorKey: "date", header: "Огноо" },
   { accessorKey: "items", header: "Бараа" },
   { accessorKey: "total", header: "Дүн" },
+  { accessorKey: "delivery", header: "Хүргэлт" },
   { accessorKey: "status", header: "Төлөв" },
   { accessorKey: "actions", header: "Үйлдэл" },
 ];

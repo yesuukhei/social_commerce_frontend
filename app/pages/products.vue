@@ -147,23 +147,6 @@
                 >
                   {{ row.original.category || "хоосон" }}
                 </span>
-                <template
-                  v-if="
-                    row.original.attributes &&
-                    Object.keys(row.original.attributes).length
-                  "
-                >
-                  <span class="text-[10px] text-zinc-300">•</span>
-                  <div class="flex gap-1.5 overflow-hidden">
-                    <span
-                      v-for="(val, key) in row.original.attributes"
-                      :key="key"
-                      class="text-[9px] bg-zinc-100 dark:bg-zinc-800 text-zinc-500 px-1.5 py-0.5 rounded font-bold"
-                    >
-                      {{ key }}: {{ val }}
-                    </span>
-                  </div>
-                </template>
               </div>
             </div>
           </div>
@@ -192,23 +175,11 @@
           >
             <UBadge
               v-if="row.original.stock"
-              size="xs"
               variant="subtle"
-              :color="getStockColor(row.original.stock)"
               class="font-bold"
             >
               {{ row.original.stock }}
             </UBadge>
-            <span v-else class="text-xs text-zinc-400 italic">хоосон</span>
-            <span
-              class="text-[10px] text-zinc-400 font-medium"
-              v-if="
-                row.original.stock <= 5 &&
-                row.original.isActive &&
-                row.original.stock > 0
-              "
-              >Бага үлдэгдэлтэй!</span
-            >
           </div>
         </template>
 
@@ -220,6 +191,21 @@
           >
             {{ row.original.isActive ? "Идэвхтэй" : "Устгагдсан (Sheets)" }}
           </UBadge>
+        </template>
+
+        <!-- Dynamic Attribute Slots -->
+        <template
+          v-for="col in dynamicAttributeColumns"
+          :key="col.key"
+          #[`${col.accessorKey}-cell`]="{ row }"
+        >
+          <span
+            v-if="row.original.attributes && row.original.attributes[col.key]"
+            class="text-xs text-zinc-600 dark:text-zinc-400 font-medium"
+          >
+            {{ row.original.attributes[col.key] }}
+          </span>
+          <span v-else class="text-[10px] text-zinc-300 italic">хоосон</span>
         </template>
       </UTable>
     </UCard>
@@ -259,13 +245,43 @@ const { data, pending, refresh } = await useFetch(
 );
 
 const products = computed(() => data.value?.data || []);
+const meta = computed(() => data.value?.meta || { headers: [], mapping: {} });
 
-const columns = [
-  { accessorKey: "name", header: "Барааны нэр" },
-  { accessorKey: "price", header: "Үнэ" },
-  { accessorKey: "stock", header: "Үлдэгдэл" },
-  { accessorKey: "status", header: "Төлөв" },
-];
+// Identify dynamic attribute columns for slot rendering
+const dynamicAttributeColumns = computed(() => {
+  const headers = meta.value.headers || [];
+  const mapping = meta.value.mapping || {};
+  const standardCols = [
+    mapping.name || "Нэр",
+    mapping.price || "Үнэ",
+    mapping.stock || "Үлдэгдэл",
+    mapping.category || "Төрөл",
+    "AI Status",
+  ];
+
+  return headers
+    .filter((h) => !standardCols.includes(h))
+    .map((h) => ({
+      key: h, // The header name from sheet
+      accessorKey: `attr_${h}`,
+      header: h,
+    }));
+});
+
+// Full column definition for UTable
+const columns = computed(() => {
+  const mapping = meta.value.mapping || {};
+
+  const cols = [
+    { accessorKey: "name", header: mapping.name || "Бараа" },
+    { accessorKey: "price", header: mapping.price || "Үнэ" },
+    { accessorKey: "stock", header: mapping.stock || "Үлдэгдэл" },
+    ...dynamicAttributeColumns.value,
+    { accessorKey: "status", header: "Төлөв" },
+  ];
+
+  return cols;
+});
 
 const getStockColor = (stock) => {
   if (stock > 10) return "success";
