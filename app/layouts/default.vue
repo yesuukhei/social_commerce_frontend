@@ -75,12 +75,20 @@
         <UDropdownMenu
           v-if="user"
           :items="[
-            { label: user.name, disabled: true },
+            {
+              label: user.name,
+              disabled: true,
+              class:
+                'font-black text-zinc-900 dark:text-white pointer-events-none',
+            },
             { type: 'separator' },
             {
               label: 'Гарах',
               icon: 'i-heroicons-arrow-left-on-rectangle',
-              click: logout,
+              onSelect: handleLogout,
+              class:
+                'text-red-500 hover:text-red-600 dark:text-red-400 dark:hover:text-red-300 font-bold hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors',
+              iconClass: 'text-red-500 dark:text-red-400',
             },
           ]"
           :ui="{
@@ -145,12 +153,20 @@
           <UDropdownMenu
             v-if="user"
             :items="[
-              { label: user.name, disabled: true },
+              {
+                label: user.name,
+                disabled: true,
+                class:
+                  'font-black text-zinc-900 dark:text-white pointer-events-none',
+              },
               { type: 'separator' },
               {
                 label: 'Гарах',
                 icon: 'i-heroicons-arrow-left-on-rectangle',
-                click: logout,
+                onSelect: handleLogout,
+                class:
+                  'text-red-500 hover:text-red-600 dark:text-red-400 dark:hover:text-red-300 font-bold hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors',
+                iconClass: 'text-red-500 dark:text-red-400',
               },
             ]"
             :ui="{
@@ -175,7 +191,7 @@
 
       <!-- Bottom Navigation for Mobile -->
       <nav
-        class="md:hidden fixed bottom-6 left-6 right-6 h-16 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-lg rounded-full flex items-center justify-around px-2 border border-zinc-200/50 dark:border-zinc-800 z-50 transition-colors duration-300"
+        class="md:hidden fixed bottom-3 left-6 right-6 h-16 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-lg rounded-full flex items-center justify-around px-2 border border-zinc-200/50 dark:border-zinc-800 z-100 transition-colors duration-300"
       >
         <ULink
           v-for="item in navItems"
@@ -183,7 +199,6 @@
           :to="item.to"
           raw
           exact
-          v-slot="{ isActive }"
           class="flex flex-col items-center justify-center w-12 h-12 rounded-full transition-all duration-300 group"
           active-class="bg-primary-500 text-white scale-110"
           inactive-class="text-zinc-400 dark:text-zinc-500 hover:text-zinc-900 dark:hover:text-white"
@@ -192,11 +207,6 @@
             class="material-symbols-rounded text-xl group-hover:scale-110 transition-transform"
             >{{ item.icon }}</span
           >
-          <!-- Active Indicator Dot -->
-          <div
-            v-if="isActive"
-            class="absolute -bottom-1 w-1 h-1 bg-white rounded-full"
-          ></div>
         </ULink>
       </nav>
     </main>
@@ -206,6 +216,10 @@
 <script setup>
 const colorMode = useColorMode();
 const { user, logout } = useAuth();
+
+const handleLogout = async () => {
+  await logout();
+};
 
 const isDark = computed(() => colorMode.value === "dark");
 

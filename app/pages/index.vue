@@ -1,7 +1,7 @@
 <template>
   <div class="space-y-8">
     <WelcomeBanner
-      name="Админ"
+      :name="user?.name"
       description="Таны AI туслах өнөөдөр захиалгуудыг автоматаар боловсруулахад бэлэн байна. Системийн төлөв хэвийн, бүх холболтууд идэвхтэй байна."
     />
 
@@ -168,7 +168,10 @@
 
       <!-- Quick Actions -->
       <div class="space-y-6">
-        <UCard :ui="{ body: { padding: 'p-6' } }">
+        <UCard
+          class="relative overflow-hidden"
+          :ui="{ body: { padding: 'p-6' } }"
+        >
           <!-- Premium Background Glow -->
           <div
             class="absolute -right-10 -top-10 w-40 h-40 bg-primary-500/10 rounded-full blur-[60px] group-hover:bg-primary-500/20 transition-all duration-700"
@@ -325,6 +328,7 @@
 
 <script setup>
 const config = useRuntimeConfig();
+const { user } = useAuth();
 const { token } = useAuth();
 const { data, pending, error, refresh } = await useFetch(
   `${config.public.apiBase}/stats`,

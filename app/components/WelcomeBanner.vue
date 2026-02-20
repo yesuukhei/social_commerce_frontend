@@ -1,10 +1,6 @@
 <template>
   <UCard class="bg-zinc-200 dark:bg-zinc-700">
-    <!-- Background Aurora Effects -->
-    <div
-      class="absolute -right-20 -top-20 w-80 h-80 bg-primary-500/10 dark:bg-primary-500/20 rounded-full blur-[100px] group-hover:bg-primary-500/20 dark:group-hover:bg-primary-500/30 transition-all duration-1000"
-    ></div>
-
+  
     <div
       class="relative flex flex-col md:flex-row md:items-center justify-between gap-6 sm:gap-10"
     >

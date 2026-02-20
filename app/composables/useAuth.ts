@@ -29,12 +29,14 @@ export const useAuth = () => {
   };
 
   const logout = async () => {
-    // Cookie-г устгахын тулд null биш undefined болгоно
-    token.value = null;
-    user.value = null;
-
-    // Redirect хийхээс өмнө төлөвүүд цэвэрлэгдсэн эсэхийг баталгаажуулна
-    await navigateTo("/login", { replace: true });
+    try {
+      user.value = null;
+      token.value = null;
+      await navigateTo("/login", { replace: true });
+    } catch (error) {
+      console.error("Logout error:", error);
+      await navigateTo("/login", { replace: true });
+    }
   };
 
   const fetchUser = async () => {
@@ -52,7 +54,6 @@ export const useAuth = () => {
       }
     } catch (error: any) {
       console.error("Fetch user error:", error.data || error.message);
-      // Хэрэв токен хүчингүй болсон бол цэвэрлэнэ
       if (error.status === 401 || error.status === 403) {
         token.value = null;
         user.value = null;
