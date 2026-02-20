@@ -86,19 +86,24 @@
 
         <UTable v-else :data="recentOrders" :columns="orderColumns">
           <template #customer-cell="{ row }">
-            <div class="flex items-center gap-3">
+            <ULink
+              :to="`/orders/${row.original._id}`"
+              class="flex items-center gap-3 group"
+            >
               <UAvatar
                 :src="row.original.customer?.avatar"
                 :alt="row.original.customer?.name"
                 :text="row.original.customer?.name?.substring(0, 2) || 'Х'"
                 size="sm"
+                class="group-hover:ring-2 group-hover:ring-primary-500 transition-all"
               />
               <div class="flex flex-col">
-                <span class="font-bold text-zinc-900 dark:text-white text-sm">{{
-                  row.original.customer?.name || "Тодорхойгүй"
-                }}</span>
+                <span
+                  class="font-bold text-zinc-900 dark:text-white text-sm group-hover:text-primary-500 transition-colors"
+                  >{{ row.original.customer?.name || "Тодорхойгүй" }}</span
+                >
               </div>
-            </div>
+            </ULink>
           </template>
           <template #date-cell="{ row }">
             <span
@@ -220,6 +225,15 @@
           </template>
           <template #actions-cell="{ row }">
             <div class="flex flex-col gap-2">
+              <UButton
+                size="xs"
+                color="gray"
+                variant="ghost"
+                :to="`/orders/${row.original._id}`"
+                class="font-bold justify-center rounded-lg w-full"
+              >
+                Дэлгэрэнгүй
+              </UButton>
               <UButton
                 v-if="
                   row.original.status === 'pending' &&
@@ -413,14 +427,22 @@
 
 <script setup>
 const config = useRuntimeConfig();
-const { user } = useAuth();
-const { token } = useAuth();
+const { user, token } = useAuth();
+const { selectedStoreId } = useStore();
+
 const { data, pending, error, refresh } = await useFetch(
-  `${config.public.apiBase}/stats`,
+  () => {
+    let url = `${config.public.apiBase}/stats`;
+    if (selectedStoreId.value) {
+      url += `?storeId=${selectedStoreId.value}`;
+    }
+    return url;
+  },
   {
     headers: {
       Authorization: `Bearer ${token.value}`,
     },
+    watch: [selectedStoreId],
   },
 );
 

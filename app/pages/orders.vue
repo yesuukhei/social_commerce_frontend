@@ -73,22 +73,27 @@
     <UCard v-else :ui="{ body: { padding: 'p-0' } }">
       <UTable :data="orders" :columns="columns">
         <template #customer-cell="{ row }">
-          <div class="flex items-center gap-3">
+          <ULink
+            :to="`/orders/${row.original._id}`"
+            class="flex items-center gap-3 group"
+          >
             <UAvatar
               :src="row.original.customer?.avatar"
               :alt="row.original.customer?.name"
               :text="row.original.customer?.name?.substring(0, 2) || 'Х'"
               size="sm"
+              class="group-hover:ring-2 group-hover:ring-primary-500 transition-all"
             />
             <div class="flex flex-col">
-              <span class="font-bold text-zinc-900 dark:text-white text-sm">{{
-                row.original.customer?.name || "Тодорхойгүй"
-              }}</span>
+              <span
+                class="font-bold text-zinc-900 dark:text-white text-sm group-hover:text-primary-500 transition-colors"
+                >{{ row.original.customer?.name || "Тодорхойгүй" }}</span
+              >
               <span class="text-[10px] text-zinc-500 font-medium"
                 >FB: {{ row.original.customer?.facebookId || "---" }}</span
               >
             </div>
-          </div>
+          </ULink>
         </template>
         <template #date-cell="{ row }">
           <span class="text-[11px] text-zinc-500 font-medium flex items-center">
@@ -194,6 +199,15 @@
         <template #actions-cell="{ row }">
           <div class="flex flex-col gap-2">
             <UButton
+              size="xs"
+              color="gray"
+              variant="ghost"
+              :to="`/orders/${row.original._id}`"
+              class="font-bold justify-center rounded-lg w-full"
+            >
+              Дэлгэрэнгүй
+            </UButton>
+            <UButton
               v-if="
                 row.original.status === 'pending' &&
                 row.original.paymentMethod === 'qpay' &&
@@ -229,12 +243,21 @@
 <script setup>
 const config = useRuntimeConfig();
 const { token } = useAuth();
+const { selectedStoreId } = useStore();
+
 const { data, pending, error, refresh } = await useFetch(
-  `${config.public.apiBase}/orders`,
+  () => {
+    let url = `${config.public.apiBase}/orders`;
+    if (selectedStoreId.value) {
+      url += `?storeId=${selectedStoreId.value}`;
+    }
+    return url;
+  },
   {
     headers: {
       Authorization: `Bearer ${token.value}`,
     },
+    watch: [selectedStoreId],
   },
 );
 

@@ -7,19 +7,53 @@
       class="hidden md:flex md:w-64 flex-col bg-white dark:bg-zinc-800 border-r border-zinc-200 dark:border-zinc-700 sticky top-0 h-screen transition-colors duration-300"
     >
       <div class="p-6">
-        <h1
-          class="text-xl font-bold tracking-tight text-zinc-900 dark:text-white flex items-center"
-        >
-          <span class="material-symbols-rounded mr-2 text-primary-500"
-            >shopping_bag</span
+        <!-- Store Switcher at the very top -->
+        <div v-if="user">
+          <UDropdownMenu
+            :items="storeSwitcherItems"
+            :ui="{
+              content: 'w-52 shadow-2xl border-zinc-200 dark:border-zinc-800',
+            }"
           >
-          Smart Commerce
-        </h1>
-        <p
-          class="text-zinc-400 dark:text-zinc-500 text-[10px] font-black uppercase tracking-widest mt-1"
-        >
-          SaaS Dashboard v4.3
-        </p>
+            <div
+              class="flex items-center justify-between p-3 rounded-2xl bg-zinc-50 dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-700/50 cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-all group"
+            >
+              <div class="flex items-center gap-2 overflow-hidden">
+                <UAvatar
+                  v-if="currentStore?.logoUrl"
+                  :src="currentStore.logoUrl"
+                  size="sm"
+                  class="shrink-0 group-hover:scale-110 transition-transform"
+                />
+                <div
+                  v-else
+                  class="w-8 h-8 rounded-xl bg-primary-500 flex items-center justify-center text-white shrink-0 group-hover:scale-110 transition-transform"
+                >
+                  <span class="material-symbols-rounded text-lg">{{
+                    selectedStoreId ? "store" : "dashboard_customize"
+                  }}</span>
+                </div>
+                <div class="overflow-hidden">
+                  <p
+                    class="text-xs font-black text-zinc-900 dark:text-white truncate"
+                  >
+                    {{ currentStore?.name || "Дэлгүүр сонгох" }}
+                  </p>
+                  <p
+                    class="text-[9px] text-zinc-500 font-bold uppercase tracking-tighter truncate"
+                  >
+                    {{
+                      selectedStoreId ? "Идэвхтэй дэлгүүр" : "Нэгдсэн удирдлага"
+                    }}
+                  </p>
+                </div>
+              </div>
+              <span class="material-symbols-rounded text-sm text-zinc-400"
+                >unfold_more</span
+              >
+            </div>
+          </UDropdownMenu>
+        </div>
       </div>
 
       <nav class="flex-1 px-4 py-4 space-y-1">
@@ -131,15 +165,43 @@
       <header
         class="md:hidden flex items-center justify-between px-6 py-4 bg-white/80 dark:bg-zinc-800/80 backdrop-blur-md border-b border-zinc-200 dark:border-zinc-700 sticky top-0 z-40 transition-colors duration-300"
       >
-        <div class="flex items-center">
-          <span class="material-symbols-rounded mr-2 text-primary-500"
-            >shopping_bag</span
+        <div class="flex items-center gap-2 w-full justify-between">
+          <!-- Mobile Store Switcher -->
+          <UDropdownMenu
+            v-if="user"
+            :items="storeSwitcherItems"
+            :ui="{
+              content: 'w-52 shadow-2xl border-zinc-200 dark:border-zinc-800',
+            }"
           >
-          <h1 class="text-lg font-bold text-zinc-900 dark:text-white">
-            Smart Commerce
-          </h1>
-        </div>
-        <div class="flex items-center gap-2">
+            <div
+              class="flex items-center gap-1.5 px-2 py-1.5 rounded-xl bg-zinc-100 dark:bg-zinc-700/50 border border-zinc-200/50 dark:border-zinc-600/50 cursor-pointer active:scale-95 transition-all"
+            >
+              <UAvatar
+                v-if="currentStore?.logoUrl"
+                :src="currentStore.logoUrl"
+                size="xs"
+                class="shrink-0"
+              />
+              <div
+                v-else
+                class="w-5 h-5 rounded-md bg-primary-500 flex items-center justify-center text-white shrink-0"
+              >
+                <span class="material-symbols-rounded text-[12px]">{{
+                  selectedStoreId ? "store" : "dashboard_customize"
+                }}</span>
+              </div>
+              <span
+                class="text-[10px] font-bold text-zinc-900 dark:text-white truncate max-w-[70px]"
+              >
+                {{ currentStore?.name || "Дэлгүүр" }}
+              </span>
+              <span class="material-symbols-rounded text-[14px] text-zinc-400"
+                >expand_more</span
+              >
+            </div>
+          </UDropdownMenu>
+
           <!-- Mobile Theme Toggle -->
           <button
             @click="toggleColorMode"
@@ -216,6 +278,49 @@
 <script setup>
 const colorMode = useColorMode();
 const { user, logout } = useAuth();
+const {
+  selectedStoreId,
+  stores,
+  currentStore,
+  selectStore,
+  fetchStores,
+  createNewStore,
+} = useStore();
+
+onMounted(async () => {
+  if (user.value) {
+    await fetchStores();
+
+    // Redirect to settings if no store exists
+    if (stores.value.length === 0 && useRoute().path !== "/settings") {
+      navigateTo("/settings");
+    }
+  }
+});
+
+const storeSwitcherItems = computed(() => {
+  const storeGroup = stores.value.map((s) => ({
+    label: s.name,
+    icon: s.logoUrl ? undefined : "i-heroicons-building-storefront",
+    avatar: s.logoUrl ? { src: s.logoUrl } : undefined,
+    onSelect: () => selectStore(s._id),
+    class:
+      selectedStoreId.value === s._id
+        ? "bg-primary-50 text-primary-600 dark:bg-primary-950/30 font-bold"
+        : "",
+  }));
+
+  const actionGroup = [
+    {
+      label: "Шинэ дэлгүүр нэмэх",
+      icon: "i-heroicons-plus-circle",
+      to: "/settings?onboarding=true",
+      class: "text-zinc-400 italic font-medium",
+    },
+  ];
+
+  return [storeGroup, actionGroup].filter((g) => g.length > 0);
+});
 
 const handleLogout = async () => {
   await logout();
@@ -254,6 +359,12 @@ const navItems = [
     mobileLabel: "Захиалга",
     to: "/orders",
     icon: "shopping_cart",
+  },
+  {
+    label: "Чат",
+    mobileLabel: "Чат",
+    to: "/inbox",
+    icon: "forum",
   },
   {
     label: "Тохиргоо",

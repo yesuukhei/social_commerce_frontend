@@ -216,6 +216,8 @@
 const config = useRuntimeConfig();
 const toast = useToast();
 const { token } = useAuth();
+const { selectedStoreId } = useStore();
+
 const search = ref("");
 const debouncedSearch = ref("");
 const showInactive = ref(false);
@@ -239,8 +241,9 @@ const { data, pending, refresh } = await useFetch(
     query: computed(() => ({
       search: debouncedSearch.value || undefined,
       isActive: showInactive.value ? "false" : "true",
+      store: selectedStoreId.value || undefined,
     })),
-    watch: [debouncedSearch, showInactive],
+    watch: [debouncedSearch, showInactive, selectedStoreId],
   },
 );
 
@@ -290,6 +293,15 @@ const getStockColor = (stock) => {
 };
 
 const syncFromSheets = async () => {
+  if (!selectedStoreId.value) {
+    toast.add({
+      title: "Мэдэгдэл",
+      description: "Бараа шинэчлэхийн тулд эхлээд дэлгүүрээ сонгоно уу.",
+      color: "amber",
+    });
+    return;
+  }
+
   syncing.value = true;
   try {
     const response = await $fetch(`${config.public.apiBase}/sync/products`, {
@@ -297,6 +309,7 @@ const syncFromSheets = async () => {
       headers: {
         Authorization: `Bearer ${token.value}`,
       },
+      body: { storeId: selectedStoreId.value },
     });
 
     if (response.success) {
