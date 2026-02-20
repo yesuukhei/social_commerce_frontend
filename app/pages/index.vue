@@ -86,18 +86,71 @@
 
         <UTable v-else :data="recentOrders" :columns="orderColumns">
           <template #customer-cell="{ row }">
-            <span class="font-bold text-zinc-900 dark:text-white">{{
-              row.original.customer
-            }}</span>
+            <div class="flex items-center gap-3">
+              <UAvatar
+                :src="row.original.customer?.avatar"
+                :alt="row.original.customer?.name"
+                :text="row.original.customer?.name?.substring(0, 2) || 'Х'"
+                size="sm"
+              />
+              <div class="flex flex-col">
+                <span class="font-bold text-zinc-900 dark:text-white text-sm">{{
+                  row.original.customer?.name || "Тодорхойгүй"
+                }}</span>
+                <span class="text-[10px] text-zinc-500 font-medium"
+                  >FB: {{ row.original.customer?.facebookId || "---" }}</span
+                >
+              </div>
+            </div>
           </template>
           <template #date-cell="{ row }">
-            <span class="text-[11px] text-zinc-500 font-medium">
-              {{ formatDateTime(row.original.createdAt) }}
+            <span
+              class="text-[11px] text-zinc-500 font-medium flex items-center"
+            >
+              <span class="material-symbols-rounded text-[14px] mr-1"
+                >schedule</span
+              >
+              {{
+                formatDateTime
+                  ? formatDateTime(row.original.createdAt)
+                  : new Date(row.original.createdAt).toLocaleString()
+              }}
             </span>
           </template>
+          <template #items-cell="{ row }">
+            <div class="flex flex-col gap-1 max-w-[200px]">
+              <div
+                v-for="(item, idx) in row.original.items?.slice(0, 2)"
+                :key="idx"
+                class="flex items-center text-xs"
+              >
+                <span
+                  class="truncate font-medium text-zinc-700 dark:text-zinc-300 max-w-[120px]"
+                  >{{ item.itemName || "Бараа" }}</span
+                >
+                <span class="text-zinc-400 mx-1">x</span>
+                <span class="font-bold text-primary-500">{{
+                  item.quantity || 1
+                }}</span>
+              </div>
+              <div
+                v-if="row.original.items?.length > 2"
+                class="text-[10px] text-zinc-400 font-medium bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded w-fit"
+              >
+                + цааш {{ row.original.items.length - 2 }} бараа
+              </div>
+              <div
+                v-else-if="!row.original.items?.length"
+                class="text-xs text-zinc-500"
+              >
+                Хоосон
+              </div>
+            </div>
+          </template>
           <template #total-cell="{ row }">
-            <span class="font-bold text-zinc-900 dark:text-white"
-              >₮{{ row.original.total }}</span
+            <span
+              class="font-bold bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 px-2 py-1 rounded-md text-xs border border-green-200 dark:border-green-800"
+              >₮{{ row.original.totalAmount?.toLocaleString() || 0 }}</span
             >
           </template>
           <template #status-cell="{ row }">
@@ -151,17 +204,38 @@
             </div>
           </template>
           <template #actions-cell="{ row }">
-            <UButton
-              v-if="row.original.status === 'pending'"
-              size="xs"
-              color="primary"
-              variant="solid"
-              class="font-black rounded-lg"
-              :loading="approvingId === row.original._id"
-              @click="approveOrder(row.original._id)"
-            >
-              Батлах
-            </UButton>
+            <div class="flex flex-col gap-2">
+              <UButton
+                v-if="
+                  (row.original.status === 'pending' ||
+                    row.original.status === 'confirmed') &&
+                  row.original.paymentMethod === 'qpay' &&
+                  row.original.paymentStatus !== 'paid'
+                "
+                size="xs"
+                color="blue"
+                variant="soft"
+                class="font-black justify-center rounded-lg w-full"
+                :loading="checkingPaymentId === row.original._id"
+                @click="checkPayment(row.original._id)"
+              >
+                Төлбөр шалгах
+              </UButton>
+              <UButton
+                v-if="
+                  row.original.status === 'pending' ||
+                  row.original.status === 'confirmed'
+                "
+                size="xs"
+                color="primary"
+                variant="solid"
+                class="font-black justify-center rounded-lg w-full"
+                :loading="approvingId === row.original._id"
+                @click="approveOrder(row.original._id)"
+              >
+                Батлах
+              </UButton>
+            </div>
           </template>
         </UTable>
       </UCard>
@@ -370,6 +444,9 @@ const approveOrder = async (id) => {
       `${config.public.apiBase}/orders/${id}/approve`,
       {
         method: "POST",
+        headers: {
+          Authorization: `Bearer ${token.value}`,
+        },
       },
     );
 
@@ -390,6 +467,47 @@ const approveOrder = async (id) => {
     });
   } finally {
     approvingId.value = null;
+  }
+};
+
+const checkingPaymentId = ref(null);
+
+const checkPayment = async (id) => {
+  checkingPaymentId.value = id;
+  try {
+    const response = await $fetch(
+      `${config.public.apiBase}/orders/${id}/check-payment`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token.value}`,
+        },
+      },
+    );
+
+    if (response.success) {
+      toast.add({
+        title: "Төлбөр",
+        description: response.message,
+        color: "green",
+      });
+      refresh();
+    } else {
+      toast.add({
+        title: "Төлөөгүй байна",
+        description: response.message,
+        color: "amber",
+      });
+    }
+  } catch (error) {
+    console.error("Payment check failed:", error);
+    toast.add({
+      title: "Алдаа",
+      description: error.data?.message || "Төлбөр шалгахад алдаа гарлаа.",
+      color: "red",
+    });
+  } finally {
+    checkingPaymentId.value = null;
   }
 };
 
