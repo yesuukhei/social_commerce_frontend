@@ -1,7 +1,12 @@
 <template>
-  <div class="h-[calc(100vh-140px)] flex gap-6 overflow-hidden">
+  <div
+    class="h-[calc(100vh-140px)] flex flex-col md:flex-row gap-6 overflow-hidden relative"
+  >
     <!-- Sidebar: Conversation List -->
-    <div class="w-80 flex flex-col gap-4 shrink-0 overflow-hidden">
+    <div
+      class="flex flex-col gap-4 shrink-0 overflow-hidden transition-all duration-300"
+      :class="[selectedId ? 'hidden md:flex md:w-80' : 'w-full md:w-80 flex']"
+    >
       <header class="flex flex-col gap-1">
         <h1
           class="text-2xl font-black tracking-tight text-zinc-900 dark:text-white flex items-center gap-2"
@@ -56,11 +61,7 @@
                 : 'hover:bg-zinc-100 dark:hover:bg-zinc-800/50',
             ]"
           >
-            <!-- Status indicator -->
-            <div
-              v-if="chat.status === 'waiting_for_info'"
-              class="absolute top-2 right-2 w-2 h-2 rounded-full bg-amber-500 animate-pulse"
-            ></div>
+            <!-- Senior UX: Conversation status indicators removed for ultimate simplicity -->
 
             <div class="flex gap-3 items-center">
               <UAvatar
@@ -68,50 +69,46 @@
                 :alt="chat.customer?.name"
                 :text="chat.customer?.name?.substring(0, 2)"
                 size="sm"
+                class="transition-transform group-hover:scale-105"
                 :ui="{
                   wrapper:
                     selectedId === chat._id
-                      ? 'ring-2 ring-white/50'
-                      : 'ring-1 ring-zinc-200 dark:ring-zinc-700',
+                      ? 'ring-2 ring-white/50 bg-white/20'
+                      : 'ring-1 ring-zinc-200 dark:ring-zinc-700 bg-zinc-100 dark:bg-zinc-800',
+                  text: 'font-black',
                 }"
               />
               <div class="flex-1 min-w-0">
-                <div class="flex justify-between items-start">
+                <div class="flex justify-between items-baseline mb-0.5">
                   <p
-                    class="text-xs font-black truncate"
+                    class="text-xs font-black truncate leading-none"
                     :class="
                       selectedId === chat._id
                         ? 'text-white'
-                        : 'text-zinc-900 dark:text-white'
+                        : 'text-zinc-900 dark:text-zinc-100'
                     "
                   >
                     {{ chat.customer?.name || "Тодорхойгүй" }}
                   </p>
-                  <span class="text-[9px] font-bold opacity-60">
+                  <span
+                    class="text-[9px] font-bold opacity-60 ml-2 whitespace-nowrap"
+                  >
                     {{ formatTime(chat.lastActivity) }}
                   </span>
                 </div>
-                <p class="text-[10px] font-medium truncate opacity-70 mt-0.5">
+                <p
+                  class="text-[10px] font-medium truncate mt-0.5 leading-tight"
+                  :class="
+                    selectedId === chat._id
+                      ? 'text-white/80'
+                      : 'text-zinc-500 dark:text-zinc-400'
+                  "
+                >
                   {{
                     chat.messages[chat.messages.length - 1]?.text ||
                     "Мессеж байхгүй"
                   }}
                 </p>
-                <div class="flex gap-2 mt-1.5 items-center">
-                  <UBadge
-                    v-if="chat.currentIntent"
-                    size="xs"
-                    variant="subtle"
-                    :color="
-                      chat.selectedId === chat._id
-                        ? 'neutral'
-                        : getIntentColor(chat.currentIntent)
-                    "
-                    class="text-[8px] px-1 font-black uppercase tracking-tighter"
-                  >
-                    {{ chat.currentIntent }}
-                  </UBadge>
-                </div>
               </div>
             </div>
           </div>
@@ -120,7 +117,10 @@
     </div>
 
     <!-- Main Area: Chat Window -->
-    <div class="flex-1 flex flex-col h-full">
+    <div
+      class="flex-1 flex flex-col h-full overflow-hidden"
+      :class="{ 'hidden md:flex': !selectedId }"
+    >
       <UCard
         v-if="selectedConversation"
         class="h-full flex flex-col"
@@ -130,92 +130,148 @@
         <header
           class="p-4 border-b border-zinc-100 dark:border-zinc-800 flex justify-between items-center bg-zinc-50/50 dark:bg-zinc-900/50 backdrop-blur-md shrink-0"
         >
-          <div class="flex items-center gap-4">
+          <div class="flex items-center gap-2 md:gap-4 min-w-0">
+            <!-- Back Button for Mobile -->
+            <UButton
+              variant="ghost"
+              color="gray"
+              icon="material-symbols:arrow-back"
+              class="md:hidden -ml-2 shrink-0"
+              @click="selectedId = null"
+            />
             <UAvatar
               :src="selectedConversation.customer?.avatar"
               :alt="selectedConversation.customer?.name"
               :text="selectedConversation.customer?.name?.substring(0, 2)"
-              size="md"
-              class="ring-2 ring-primary-500/20"
+              size="sm"
+              class="ring-2 ring-primary-500/20 shrink-0"
             />
-            <div>
-              <h2 class="text-sm font-black text-zinc-900 dark:text-white">
+            <div class="truncate">
+              <h2
+                class="text-xs md:text-sm font-black text-zinc-900 dark:text-white truncate"
+              >
                 {{ selectedConversation.customer?.name }}
               </h2>
-              <div class="flex items-center gap-2 mt-0.5">
-                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+              <div class="flex items-center gap-1.5 mt-0.5">
                 <span
-                  class="text-[10px] text-zinc-500 font-bold uppercase tracking-widest"
-                  >Messenger Идэвхтэй</span
+                  class="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0"
+                ></span>
+                <span
+                  class="text-[8px] md:text-[10px] text-zinc-500 font-bold uppercase tracking-widest truncate"
+                  >Live</span
                 >
               </div>
             </div>
           </div>
-          <div class="flex items-center gap-2">
-            <UButton
-              variant="soft"
-              color="neutral"
-              icon="material-symbols:refresh"
-              size="sm"
-              @click="loadConversationDetails(selectedId)"
-              :loading="loadingDetails"
-            />
-            <USelect
-              v-model="selectedConversation.status"
-              :options="[
-                'active',
-                'waiting_for_info',
-                'order_created',
-                'closed',
-              ]"
-              size="sm"
-              class="w-36"
-              @update:model-value="updateStatus"
-            />
+          <div class="flex items-center gap-1.5 md:gap-3 shrink-0">
+            <!-- Senior UX: Logical Grouping of Header Actions -->
+            <div
+              class="hidden sm:flex items-center bg-zinc-100 dark:bg-zinc-800 p-0.5 rounded-xl border border-zinc-200/50 dark:border-zinc-700/50"
+            >
+              <UButton
+                variant="ghost"
+                :color="selectedConversation.isManualMode ? 'orange' : 'gray'"
+                :icon="
+                  selectedConversation.isManualMode
+                    ? 'material-symbols:smart-toy-off-outline'
+                    : 'material-symbols:smart-toy-outline'
+                "
+                size="xs"
+                class="rounded-lg font-black text-[9px] uppercase tracking-tighter px-2 h-7"
+                @click="toggleManualMode"
+                :loading="togglingManual"
+              >
+                {{ selectedConversation.isManualMode ? "Manual" : "AI Live" }}
+              </UButton>
+              <div class="w-px h-3 bg-zinc-200 dark:bg-zinc-700 mx-1"></div>
+              <UButton
+                variant="ghost"
+                color="gray"
+                icon="material-symbols:refresh"
+                size="xs"
+                class="rounded-lg h-7 w-7"
+                @click="loadConversationDetails(selectedId)"
+                :loading="loadingDetails"
+              />
+            </div>
           </div>
         </header>
 
         <!-- Messages Area -->
         <div
           ref="messageContainer"
-          class="flex-1 overflow-y-auto p-6 space-y-4 custom-scrollbar bg-zinc-50/30 dark:bg-zinc-950/20"
+          class="flex-1 overflow-y-auto p-4 md:p-6 space-y-4 custom-scrollbar bg-zinc-50/30 dark:bg-zinc-950/20"
         >
+          <!-- Manual Mode Warning -->
+          <div
+            v-if="selectedConversation.isManualMode"
+            class="bg-orange-50 dark:bg-orange-950/20 border border-orange-100 dark:border-orange-900/50 p-3 rounded-2xl flex items-center gap-3 mb-6 animate-in fade-in slide-in-from-top-2 duration-500"
+          >
+            <div
+              class="w-8 h-8 rounded-full bg-orange-100 dark:bg-orange-900/50 flex items-center justify-center shrink-0"
+            >
+              <span
+                class="material-symbols-rounded text-orange-600 dark:text-orange-400 text-lg"
+                >smart_toy</span
+              >
+            </div>
+            <div>
+              <p
+                class="text-[11px] font-black text-orange-900 dark:text-orange-300 uppercase tracking-tighter"
+              >
+                AI Түр зогссон (Manual Mode)
+              </p>
+              <p
+                class="text-[10px] font-semibold text-orange-700 dark:text-orange-400 opacity-80"
+              >
+                Энэ хэрэглэгчид AI хариулахгүй тул та гараар хариулна уу.
+              </p>
+            </div>
+          </div>
+
           <div
             v-for="(msg, i) in selectedConversation.messages"
             :key="i"
-            class="flex flex-col"
+            class="flex flex-col group/msg"
             :class="[msg.sender === 'customer' ? 'items-start' : 'items-end']"
           >
             <div
-              class="max-w-[80%] px-4 py-2.5 rounded-3xl text-sm font-medium shadow-sm transition-all duration-300"
+              class="max-w-[85%] md:max-w-[70%] px-4 py-2.5 rounded-2xl md:rounded-[1.5rem] text-xs md:text-sm font-semibold transition-all duration-300"
               :class="[
                 msg.sender === 'customer'
-                  ? 'bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white rounded-tl-none border border-zinc-100 dark:border-zinc-700'
+                  ? 'bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 rounded-tl-none border border-zinc-100 dark:border-zinc-700 shadow-sm'
                   : msg.sender === 'bot'
-                    ? 'bg-zinc-200 dark:bg-zinc-700 text-zinc-800 dark:text-zinc-200 rounded-tr-none'
-                    : 'bg-primary-500 text-white rounded-tr-none shadow-primary-500/20',
+                    ? 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 rounded-tr-none border border-zinc-200/50 dark:border-zinc-700/50 italic opacity-90'
+                    : 'bg-primary-500 text-white rounded-tr-none shadow-lg shadow-primary-500/20',
               ]"
             >
               {{ msg.text }}
             </div>
-            <span
-              class="text-[9px] font-bold text-zinc-400 dark:text-zinc-600 mt-1 uppercase tracking-tighter px-1"
+            <div
+              class="flex items-center gap-1.5 mt-1 px-1 opacity-0 group-hover/msg:opacity-100 transition-opacity duration-300"
             >
-              {{ formatDateTime(msg.timestamp) }} •
-              {{
-                msg.sender === "bot"
-                  ? "AI"
-                  : msg.sender === "admin"
-                    ? "Админ"
-                    : "Хэрэглэгч"
-              }}
-            </span>
+              <span
+                class="text-[8px] font-black text-zinc-400 uppercase tracking-tighter"
+              >
+                {{ formatDateTime(msg.timestamp) }}
+              </span>
+              <span
+                v-if="msg.sender === 'bot'"
+                class="text-[8px] font-black text-primary-500 uppercase tracking-tighter"
+                >AI</span
+              >
+              <span
+                v-if="msg.sender === 'admin'"
+                class="text-[8px] font-black text-zinc-500 uppercase tracking-tighter"
+                >Admin</span
+              >
+            </div>
           </div>
         </div>
 
         <!-- Chat Input -->
         <footer
-          class="p-4 border-t border-zinc-100 dark:border-zinc-800 bg-white dark:bg-zinc-900 shrink-0"
+          class="p-3 md:p-4 border-t border-zinc-100 dark:border-zinc-800 bg-white dark:bg-zinc-900 shrink-0"
         >
           <div class="flex items-end gap-2">
             <UTextarea
@@ -228,7 +284,7 @@
               variant="none"
               :ui="{
                 wrapper:
-                  'bg-zinc-100 dark:bg-zinc-800/50 rounded-2xl ring-0 focus:ring-2 focus:ring-primary-500 transition-all p-1',
+                  'bg-zinc-100 dark:bg-zinc-800/50 rounded-xl md:rounded-2xl ring-0 focus:ring-2 focus:ring-primary-500 p-1',
               }"
               @keydown.enter.prevent="sendMessage"
             />
@@ -236,51 +292,59 @@
               color="primary"
               variant="solid"
               icon="material-symbols:send"
-              size="lg"
-              class="rounded-2xl h-[42px] px-4 shadow-lg shadow-primary-500/20 animate-in fade-in"
+              size="md"
+              class="rounded-xl md:rounded-2xl h-[38px] md:h-[42px] px-4 shadow-lg shadow-primary-500/20"
               :loading="sending"
               :disabled="!newMessage.trim()"
               @click="sendMessage"
-            >
-              Илгээх
-            </UButton>
+            />
           </div>
-          <p
-            class="text-[9px] text-zinc-400 font-bold mt-2 ml-4 flex items-center gap-1"
-          >
-            <span class="material-symbols-rounded text-[10px]">info</span>
-            Таны мессеж Messenger рүү шууд илгээгдэнэ.
-          </p>
         </footer>
       </UCard>
 
-      <!-- Empty State for Chat Window -->
+      <!-- Empty State -->
       <div
         v-else
-        class="h-full flex flex-col items-center justify-center p-10 text-center opacity-40"
+        class="h-full flex flex-col items-center justify-center p-12 text-center"
       >
-        <div
-          class="w-20 h-20 rounded-3xl bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center mb-6"
-        >
-          <span class="material-symbols-rounded text-4xl text-zinc-400"
-            >forum</span
+        <div class="relative mb-8">
+          <div
+            class="absolute inset-0 bg-primary-500/10 blur-3xl rounded-full scale-150"
+          ></div>
+          <div
+            class="relative w-24 h-24 rounded-[2.5rem] bg-white dark:bg-zinc-800 shadow-2xl border border-zinc-100 dark:border-zinc-700 flex items-center justify-center animate-bounce-slow"
           >
+            <span class="material-symbols-rounded text-5xl text-primary-500"
+              >forum</span
+            >
+          </div>
+          <div
+            class="absolute -bottom-2 -right-2 w-10 h-10 rounded-2xl bg-primary-100 dark:bg-primary-900/50 flex items-center justify-center shadow-lg border-2 border-white dark:border-zinc-900"
+          >
+            <span
+              class="material-symbols-rounded text-xl text-primary-600 dark:text-primary-400"
+              >add</span
+            >
+          </div>
         </div>
         <h2
-          class="text-xl font-black text-zinc-900 dark:text-white mb-2 underline decoration-primary-500 underline-offset-4 decoration-4"
+          class="text-2xl font-black text-zinc-900 dark:text-white mb-3 tracking-tight"
         >
-          Харилцаа сонгоно уу
+          Харилцаа сонгох
         </h2>
-        <p class="text-sm text-zinc-500 max-w-xs font-semibold">
-          Зүүн гар талын жагсаалтаас хэрэглэгчээ сонгон чатны түүхийг харна уу.
+        <p
+          class="text-xs text-zinc-500 dark:text-zinc-400 max-w-xs font-bold leading-relaxed uppercase tracking-wide opacity-60"
+        >
+          Зүүн гар талын жагсаалтаас хэрэглэгчээ сонгон <br />
+          чатны түүхийг бүрэн харна уу.
         </p>
       </div>
     </div>
 
-    <!-- Right Area: Summary -->
+    <!-- Right Area: Summary (Hidden on smaller screens) -->
     <div
       v-if="selectedConversation"
-      class="w-64 shrink-0 space-y-4 overflow-y-auto no-scrollbar hidden xl:block"
+      class="w-64 shrink-0 space-y-4 overflow-y-auto no-scrollbar hidden xl:block transition-all duration-300"
     >
       <UCard :ui="{ body: { padding: 'p-4' } }">
         <h3
@@ -362,6 +426,7 @@ const selectedConversation = ref(null);
 const newMessage = ref("");
 const sending = ref(false);
 const loadingDetails = ref(false);
+const togglingManual = ref(false);
 const messageContainer = ref(null);
 
 // Fetch all conversations
@@ -448,19 +513,42 @@ const sendMessage = async () => {
   }
 };
 
-const updateStatus = async (newStatus) => {
+const toggleManualMode = async () => {
+  if (!selectedId.value || togglingManual.value) return;
+
+  togglingManual.value = true;
   try {
-    await $fetch(
-      `${config.public.apiBase}/conversations/${selectedId.value}/status`,
+    const res = await $fetch(
+      `${config.public.apiBase}/conversations/${selectedId.value}/toggle-manual`,
       {
-        method: "PUT",
+        method: "PATCH",
         headers: { Authorization: `Bearer ${token.value}` },
-        body: { status: newStatus },
       },
     );
-    refresh();
-    toast.add({ title: "Шинэчлэгдлээ", color: "green", size: "xs" });
-  } catch (err) {}
+
+    if (res.success) {
+      selectedConversation.value.isManualMode = res.isManualMode;
+      if (res.isManualMode) {
+        selectedConversation.value.status = "active";
+      }
+      toast.add({
+        title: res.isManualMode ? "AI Түр зогслоо" : "AI Идэвхжлээ",
+        description: res.isManualMode
+          ? "Та энэ хэрэглэгчтэй гараар харилцана уу."
+          : "AI хэрэглэгчид хариулж эхэлнэ.",
+        color: res.isManualMode ? "orange" : "green",
+      });
+      refresh();
+    }
+  } catch (error) {
+    toast.add({
+      title: "Алдаа гарлаа",
+      description: error.data?.message,
+      color: "red",
+    });
+  } finally {
+    togglingManual.value = false;
+  }
 };
 
 // Utils
