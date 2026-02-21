@@ -1,10 +1,8 @@
 <template>
-  <div
-    class="h-[calc(100vh-140px)] flex flex-col md:flex-row gap-6 overflow-hidden relative"
-  >
+  <div class="flex flex-col md:flex-row gap-6">
     <!-- Sidebar: Conversation List -->
     <div
-      class="flex flex-col gap-4 shrink-0 overflow-hidden transition-all duration-300"
+      class="flex flex-col gap-4 transition-all duration-300"
       :class="[selectedId ? 'hidden md:flex md:w-80' : 'w-full md:w-80 flex']"
     >
       <header class="flex flex-col gap-1">
@@ -22,7 +20,7 @@
       </header>
 
       <UCard
-        class="flex-1 overflow-hidden"
+        class="flex-1"
         :ui="{ body: { padding: 'p-0 h-full flex flex-col' } }"
       >
         <!-- Search -->
@@ -64,32 +62,52 @@
             <!-- Senior UX: Conversation status indicators removed for ultimate simplicity -->
 
             <div class="flex gap-3 items-center">
-              <UAvatar
-                :src="chat.customer?.avatar"
-                :alt="chat.customer?.name"
-                :text="chat.customer?.name?.substring(0, 2)"
-                size="sm"
-                class="transition-transform group-hover:scale-105"
-                :ui="{
-                  wrapper:
-                    selectedId === chat._id
-                      ? 'ring-2 ring-white/50 bg-white/20'
-                      : 'ring-1 ring-zinc-200 dark:ring-zinc-700 bg-zinc-100 dark:bg-zinc-800',
-                  text: 'font-black',
-                }"
-              />
+              <div class="relative">
+                <UAvatar
+                  :src="chat.customer?.avatar"
+                  :alt="chat.customer?.name"
+                  size="sm"
+                  class="transition-transform group-hover:scale-105"
+                  :ui="{
+                    wrapper:
+                      selectedId === chat._id
+                        ? 'ring-2 ring-white/50 bg-white/20'
+                        : 'ring-1 ring-zinc-200 dark:ring-zinc-700 bg-zinc-100 dark:bg-zinc-800',
+                    text: 'font-black',
+                  }"
+                />
+                <!-- Unread Indicator Dot -->
+                <div
+                  v-if="chat.unreadCount > 0 && selectedId !== chat._id"
+                  class="absolute -top-1 -right-1 w-3.5 h-3.5 bg-primary-500 border-2 border-white dark:border-zinc-900 rounded-full animate-bounce"
+                ></div>
+              </div>
               <div class="flex-1 min-w-0">
                 <div class="flex justify-between items-baseline mb-0.5">
-                  <p
-                    class="text-xs font-black truncate leading-none"
-                    :class="
-                      selectedId === chat._id
-                        ? 'text-white'
-                        : 'text-zinc-900 dark:text-zinc-100'
-                    "
-                  >
-                    {{ chat.customer?.name || "Тодорхойгүй" }}
-                  </p>
+                  <div class="flex items-center gap-2 truncate">
+                    <p
+                      class="text-xs font-black truncate leading-none"
+                      :class="[
+                        selectedId === chat._id
+                          ? 'text-white'
+                          : 'text-zinc-900 dark:text-zinc-100',
+                        chat.unreadCount > 0 ? 'font-black' : '',
+                      ]"
+                    >
+                      {{ chat.customer?.name || "Тодорхойгүй" }}
+                    </p>
+                    <UBadge
+                      v-if="
+                        chat.currentIntent && chat.currentIntent !== 'other'
+                      "
+                      size="xs"
+                      variant="subtle"
+                      :color="getIntentColor(chat.currentIntent)"
+                      class="text-[7px] px-1 py-0 uppercase font-black"
+                    >
+                      {{ chat.currentIntent }}
+                    </UBadge>
+                  </div>
                   <span
                     class="text-[9px] font-bold opacity-60 ml-2 whitespace-nowrap"
                   >
@@ -98,11 +116,14 @@
                 </div>
                 <p
                   class="text-[10px] font-medium truncate mt-0.5 leading-tight"
-                  :class="
+                  :class="[
                     selectedId === chat._id
                       ? 'text-white/80'
-                      : 'text-zinc-500 dark:text-zinc-400'
-                  "
+                      : 'text-zinc-500 dark:text-zinc-400',
+                    chat.unreadCount > 0
+                      ? 'text-zinc-900 dark:text-zinc-100 font-bold'
+                      : '',
+                  ]"
                 >
                   {{
                     chat.messages[chat.messages.length - 1]?.text ||
@@ -117,18 +138,15 @@
     </div>
 
     <!-- Main Area: Chat Window -->
-    <div
-      class="flex-1 flex flex-col h-full overflow-hidden"
-      :class="{ 'hidden md:flex': !selectedId }"
-    >
+    <div :class="{ 'hidden md:flex': !selectedId }">
       <UCard
         v-if="selectedConversation"
-        class="h-full flex flex-col"
+        class="h-[calc(100vh-100px)] flex flex-col flex-1 overflow-y-auto"
         :ui="{ body: { padding: 'p-0 h-full flex flex-col' } }"
       >
         <!-- Chat Header -->
         <header
-          class="p-4 border-b border-zinc-100 dark:border-zinc-800 flex justify-between items-center bg-zinc-50/50 dark:bg-zinc-900/50 backdrop-blur-md shrink-0"
+          class="p-4 border-b rounded-2xl sticky top-5 z-1000 border-zinc-100 dark:border-zinc-800 flex justify-between items-center bg-zinc-100 dark:bg-zinc-900/50 backdrop-blur-md shrink-0"
         >
           <div class="flex items-center gap-2 md:gap-4 min-w-0">
             <!-- Back Button for Mobile -->
@@ -166,7 +184,7 @@
           <div class="flex items-center gap-1.5 md:gap-3 shrink-0">
             <!-- Senior UX: Logical Grouping of Header Actions -->
             <div
-              class="hidden sm:flex items-center bg-zinc-100 dark:bg-zinc-800 p-0.5 rounded-xl border border-zinc-200/50 dark:border-zinc-700/50"
+              class="flex items-center bg-zinc-100 dark:bg-zinc-800 p-0.5 rounded-xl border border-zinc-200/50 dark:border-zinc-700/50"
             >
               <UButton
                 variant="ghost"
@@ -200,7 +218,7 @@
         <!-- Messages Area -->
         <div
           ref="messageContainer"
-          class="flex-1 overflow-y-auto p-4 md:p-6 space-y-4 custom-scrollbar bg-zinc-50/30 dark:bg-zinc-950/20"
+          class="flex-1 overflow-y-auto p-4 md:p-6 space-y-4 custom-scrollbar"
         >
           <!-- Manual Mode Warning -->
           <div
@@ -247,9 +265,7 @@
             >
               {{ msg.text }}
             </div>
-            <div
-              class="flex items-center gap-1.5 mt-1 px-1 opacity-0 group-hover/msg:opacity-100 transition-opacity duration-300"
-            >
+            <div class="flex items-center gap-1.5 mt-1 px-1">
               <span
                 class="text-[8px] font-black text-zinc-400 uppercase tracking-tighter"
               >
@@ -271,7 +287,7 @@
 
         <!-- Chat Input -->
         <footer
-          class="p-3 md:p-4 border-t border-zinc-100 dark:border-zinc-800 bg-white dark:bg-zinc-900 shrink-0"
+          class="p-2 border-t rounded-full border-zinc-100 dark:border-zinc-800 bg-zinc-100 dark:bg-zinc-900 shrink-0"
         >
           <div class="flex items-end gap-2">
             <UTextarea
@@ -419,6 +435,12 @@ const config = useRuntimeConfig();
 const { token } = useAuth();
 const { selectedStoreId } = useStore();
 const toast = useToast();
+const {
+  onNewMessage,
+  onConversationUpdated,
+  joinConversation,
+  leaveConversation,
+} = useSocket();
 
 const search = ref("");
 const selectedId = ref(null);
@@ -454,7 +476,11 @@ const filteredConversations = computed(() => {
 });
 
 const selectConversation = async (chat) => {
+  if (selectedId.value) leaveConversation(selectedId.value);
+
   selectedId.value = chat._id;
+  chat.unreadCount = 0; // Clear locally
+  joinConversation(chat._id);
   await loadConversationDetails(chat._id);
 };
 
@@ -555,17 +581,33 @@ const toggleManualMode = async () => {
 const formatTime = (date) => {
   if (!date) return "";
   const d = new Date(date);
-  return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  return d.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
 };
 
 const formatDateTime = (date) => {
   if (!date) return "";
   const d = new Date(date);
-  return (
-    d.toLocaleDateString([], { month: "short", day: "numeric" }) +
-    " " +
-    d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
-  );
+  const months = [
+    "1-р сарын",
+    "2-р сарын",
+    "3-р сарын",
+    "4-р сарын",
+    "5-р сарын",
+    "6-р сарын",
+    "7-р сарын",
+    "8-р сарын",
+    "9-р сарын",
+    "10-р сарын",
+    "11-р сарын",
+    "12-р сарын",
+  ];
+  const month = months[d.getMonth()];
+  const day = d.getDate();
+  const time = d.toLocaleTimeString("en-GB", {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+  return `${month} ${day}, ${time}`;
 };
 
 const getIntentColor = (intent) => {
@@ -585,19 +627,57 @@ const scrollToBottom = () => {
   }
 };
 
-// Polling for new messages (keep it simple for now)
-let pollTimer;
 onMounted(() => {
-  pollTimer = setInterval(() => {
-    refresh();
-    if (selectedId.value) {
-      // Optionally poll details if needed, but sidebar refresh is a good start
+  onNewMessage((msg) => {
+    // If it's for currently selected conversation
+    if (selectedConversation.value && msg.conversation === selectedId.value) {
+      // Avoid duplicate Admin messages already added by API reply
+      if (
+        !selectedConversation.value.messages.some(
+          (m) => m.timestamp === msg.timestamp,
+        )
+      ) {
+        selectedConversation.value.messages.push(msg);
+        nextTick(() => scrollToBottom());
+      }
     }
-  }, 10000); // 10s
-});
+  });
 
-onUnmounted(() => {
-  clearInterval(pollTimer);
+  onConversationUpdated((update) => {
+    // Update the list item
+    const index = conversations.value.findIndex(
+      (c) => c._id === update.conversationId,
+    );
+    if (index !== -1) {
+      if (update.lastMessage) {
+        conversations.value[index].messages.push({ text: update.lastMessage });
+        conversations.value[index].lastActivity = update.lastActivity;
+
+        // Mark as unread if not selected
+        if (selectedId.value !== update.conversationId) {
+          conversations.value[index].unreadCount =
+            (conversations.value[index].unreadCount || 0) + 1;
+        }
+      }
+
+      if (update.status) conversations.value[index].status = update.status;
+      if (update.isManualMode !== undefined)
+        conversations.value[index].isManualMode = update.isManualMode;
+    } else {
+      // New conversation appeared? Refresh whole list
+      refresh();
+    }
+
+    // If selected conversation was updated
+    if (
+      selectedConversation.value &&
+      selectedId.value === update.conversationId
+    ) {
+      if (update.status) selectedConversation.value.status = update.status;
+      if (update.isManualMode !== undefined)
+        selectedConversation.value.isManualMode = update.isManualMode;
+    }
+  });
 });
 </script>
 

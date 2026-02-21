@@ -95,16 +95,12 @@
             </div>
           </ULink>
         </template>
-        <template #date-cell="{ row }">
+        <template #createdAt-cell="{ row }">
           <span class="text-[11px] text-zinc-500 font-medium flex items-center">
             <span class="material-symbols-rounded text-[14px] mr-1"
               >schedule</span
             >
-            {{
-              formatDateTime
-                ? formatDateTime(row.original.createdAt)
-                : new Date(row.original.createdAt).toLocaleString()
-            }}
+            {{ formatDateTime(row.original.createdAt) }}
           </span>
         </template>
         <template #items-cell="{ row }">
@@ -137,7 +133,7 @@
             </div>
           </div>
         </template>
-        <template #total-cell="{ row }">
+        <template #totalAmount-cell="{ row }">
           <span class="font-bold px-2 py-1 rounded-md text-xs"
             >₮{{ row.original.totalAmount?.toLocaleString() || 0 }}</span
           >
@@ -265,9 +261,9 @@ const orders = computed(() => data.value?.orders || []);
 
 const columns = [
   { accessorKey: "customer", header: "Хэрэглэгч" },
-  { accessorKey: "date", header: "Огноо" },
+  { accessorKey: "createdAt", header: "Огноо" },
   { accessorKey: "items", header: "Бараа" },
-  { accessorKey: "total", header: "Дүн" },
+  { accessorKey: "totalAmount", header: "Дүн" },
   { accessorKey: "delivery", header: "Хүргэлт" },
   { accessorKey: "status", header: "Төлөв" },
   { accessorKey: "actions", header: "Үйлдэл" },
@@ -348,4 +344,40 @@ const approveOrder = async (id) => {
     approvingId.value = null;
   }
 };
+
+const formatDateTime = (date) => {
+  if (!date) return "";
+  const d = new Date(date);
+  const months = [
+    "1-р сарын",
+    "2-р сарын",
+    "3-р сарын",
+    "4-р сарын",
+    "5-р сарын",
+    "6-р сарын",
+    "7-р сарын",
+    "8-р сарын",
+    "9-р сарын",
+    "10-р сарын",
+    "11-р сарын",
+    "12-р сарын",
+  ];
+  const month = months[d.getMonth()];
+  const day = d.getDate();
+  const time = d.toLocaleTimeString("en-GB", {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+  return `${month} ${day}, ${time}`;
+};
+
+const { onConversationUpdated } = useSocket();
+onMounted(() => {
+  onConversationUpdated((update) => {
+    // If a new order was created or status updated, refresh the list
+    if (update.status === "order_created" || update.lastMessage) {
+      refresh();
+    }
+  });
+});
 </script>
