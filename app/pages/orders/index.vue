@@ -13,14 +13,46 @@
           Бүх цаг үеийн захиалгын түүх
         </p>
       </div>
-      <div class="flex gap-3">
-        <UButton variant="outline" color="gray" class="font-semibold">
-          <span class="material-symbols-rounded text-lg mr-2">filter_list</span>
-          Шүүлтүүр
-        </UButton>
-        <UButton variant="outline" color="gray" class="font-semibold">
-          <span class="material-symbols-rounded text-lg mr-2">download</span>
-          Экспорт
+      <div class="flex flex-wrap gap-4 items-end">
+        <div class="space-y-1.5 min-w-[200px]">
+          <span
+            class="text-[10px] font-black uppercase text-zinc-400 tracking-widest ml-1"
+            >Хайх</span
+          >
+          <UInput
+            v-model="searchInput"
+            icon="material-symbols:search"
+            placeholder="Хэрэглэгчийн нэр..."
+            class="w-full"
+          />
+        </div>
+        <div class="space-y-1.5 min-w-[150px]">
+          <span
+            class="text-[10px] font-black uppercase text-zinc-400 tracking-widest ml-1"
+            >Төлөв</span
+          >
+          <USelectMenu
+            v-model="status"
+            :items="statusOptions"
+            placeholder="Бүгд"
+            value-attribute="value"
+            option-attribute="label"
+            class="w-full"
+          >
+            <template #label>
+              {{
+                statusOptions.find((o) => o.value === status)?.label || "Бүгд"
+              }}
+            </template>
+          </USelectMenu>
+        </div>
+        <UButton
+          variant="soft"
+          color="gray"
+          class="font-semibold rounded-xl h-[38px]"
+          @click="resetFilters"
+        >
+          <span class="material-symbols-rounded text-lg">restart_alt</span>
         </UButton>
       </div>
     </header>
@@ -89,8 +121,9 @@
                 class="font-bold text-zinc-900 dark:text-white text-sm group-hover:text-primary-500 transition-colors"
                 >{{ row.original.customer?.name || "Тодорхойгүй" }}</span
               >
-              <span class="text-[10px] text-zinc-500 font-medium"
-                >FB: {{ row.original.customer?.facebookId || "---" }}</span
+              <span
+                class="text-[9px] text-primary-500 font-black uppercase tracking-widest"
+                >Messenger</span
               >
             </div>
           </ULink>
@@ -232,6 +265,24 @@
           </div>
         </template>
       </UTable>
+
+      <!-- Pagination -->
+      <div
+        v-if="totalPages > 1"
+        class="p-4 border-t border-zinc-100 dark:border-zinc-800 flex justify-between items-center"
+      >
+        <p
+          class="text-[10px] font-black text-zinc-400 uppercase tracking-widest"
+        >
+          Нийт {{ totalOrders }} захиалга
+        </p>
+        <UPagination
+          v-model="page"
+          :page-count="limit"
+          :total="totalOrders"
+          :ui="{ rounded: 'rounded-full' }"
+        />
+      </div>
     </UCard>
   </div>
 </template>
@@ -241,23 +292,51 @@ const config = useRuntimeConfig();
 const { token } = useAuth();
 const { selectedStoreId } = useStore();
 
+const searchInput = ref("");
+const debouncedSearch = ref("");
+const status = ref("");
+const page = ref(1);
+const limit = ref(20);
+let searchTimeout;
+
+const statusOptions = [
+  { label: "Бүгд", value: "" },
+  { label: "Хүлээгдэж буй", value: "pending" },
+  { label: "Баталгаажсан", value: "completed" },
+];
+
 const { data, pending, error, refresh } = await useFetch(
   () => {
-    let url = `${config.public.apiBase}/orders`;
-    if (selectedStoreId.value) {
-      url += `?storeId=${selectedStoreId.value}`;
-    }
+    let url = `${config.public.apiBase}/orders?page=${page.value}&limit=${limit.value}`;
+    if (selectedStoreId.value) url += `&storeId=${selectedStoreId.value}`;
+    if (status.value) url += `&status=${status.value.value}`;
+    if (debouncedSearch.value) url += `&search=${debouncedSearch.value}`;
     return url;
   },
   {
-    headers: {
-      Authorization: `Bearer ${token.value}`,
-    },
-    watch: [selectedStoreId],
+    headers: { Authorization: `Bearer ${token.value}` },
+    watch: [selectedStoreId, status, page, limit, debouncedSearch],
   },
 );
 
+watch(searchInput, (val) => {
+  clearTimeout(searchTimeout);
+  searchTimeout = setTimeout(() => {
+    debouncedSearch.value = val;
+    page.value = 1;
+  }, 500);
+});
+
+const resetFilters = () => {
+  searchInput.value = "";
+  debouncedSearch.value = "";
+  status.value = "";
+  page.value = 1;
+};
+
 const orders = computed(() => data.value?.orders || []);
+const totalPages = computed(() => data.value?.totalPages || 0);
+const totalOrders = computed(() => data.value?.totalOrders || 0);
 
 const columns = [
   { accessorKey: "customer", header: "Хэрэглэгч" },

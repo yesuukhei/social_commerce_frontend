@@ -322,6 +322,47 @@ const storeSwitcherItems = computed(() => {
   return [storeGroup, actionGroup].filter((g) => g.length > 0);
 });
 
+// Real-time Order Notifications
+const { onOrderCreated } = useSocket();
+const toast = useToast();
+
+onMounted(() => {
+  // Request Notification Permission
+  if (process.client && "Notification" in window) {
+    if (
+      Notification.permission !== "granted" &&
+      Notification.permission !== "denied"
+    ) {
+      Notification.requestPermission();
+    }
+  }
+
+  onOrderCreated((order) => {
+    // 1. Show UI Toast
+    toast.add({
+      title: "🚨 ШИНЭ ЗАХИАЛГА!",
+      description: `${order.customerName} - ₮${order.totalAmount.toLocaleString()} захиалга өглөө.`,
+      icon: "i-heroicons-shopping-cart",
+      color: "primary",
+      timeout: 10000,
+      actions: [
+        {
+          label: "Үзэх",
+          click: () => navigateTo(`/orders/${order.orderId}`),
+        },
+      ],
+    });
+
+    // 2. Browser System Notification (for background tabs)
+    if (process.client && Notification.permission === "granted") {
+      new Notification("Smart Order: Шинэ захиалга!", {
+        body: `${order.customerName} - ₮${order.totalAmount.toLocaleString()}`,
+        icon: "/favicon.ico",
+      });
+    }
+  });
+});
+
 const handleLogout = async () => {
   await logout();
 };

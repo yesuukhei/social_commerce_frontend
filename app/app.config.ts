@@ -14,8 +14,8 @@ export default defineAppConfig({
       },
       variants: {
         size: {
-          sm: "px-6 py-2.5 text-sm font-semibold",
-          md: "px-8 py-3 text-sm font-semibold",
+          sm: "px-6 py-2 text-sm font-semibold",
+          md: "px-8 py-2.5 text-sm font-semibold",
           lg: "px-8 py-3.5 text-base font-semibold",
         },
         variant: {
@@ -36,10 +36,12 @@ export default defineAppConfig({
     input: {
       slots: {
         base: "font-medium transition-all !rounded-full border-zinc-200/60 dark:border-zinc-700 focus:ring-primary-300 dark:bg-zinc-900",
+        leading: "pl-4",
+        leadingIcon: "text-zinc-400 dark:text-zinc-500 shrink-0",
       },
       variants: {
         size: {
-          md: "px-4 py-3 text-sm",
+          md: "px-4 py-2.5 text-sm",
           lg: "px-5 py-3.5 text-base",
         },
       },
@@ -73,12 +75,14 @@ export default defineAppConfig({
     select: {
       slots: {
         base: "rounded-full font-medium px-4 border-zinc-200/60 dark:border-zinc-700 focus:ring-primary-500 dark:bg-zinc-900",
+        content:
+          "rounded-2xl p-1 border border-zinc-200/60 dark:border-zinc-700 bg-white dark:bg-zinc-800 shadow-xl",
       },
     },
 
     modal: {
       slots: {
-        overlay: "bg-zinc-950/70 backdrop-blur-md",
+        overlay: "bg-zinc-950/70 backdrop-blur-sm",
         content:
           "rounded-3xl border border-zinc-200/60 dark:border-zinc-700 bg-white dark:bg-zinc-950",
       },
@@ -93,8 +97,23 @@ export default defineAppConfig({
     dropdown: {
       slots: {
         content:
-          "rounded-2xl p-1 border border-zinc-200/60 dark:border-zinc-700 bg-white dark:bg-zinc-800",
+          "!rounded-2xl !p-1.5 border border-zinc-200/60 dark:border-zinc-800 bg-white dark:bg-zinc-900",
         item: "rounded-xl font-medium",
+      },
+    },
+    selectMenu: {
+      slots: {
+        base: "!rounded-full font-medium !px-4 !py-2.5",
+        content:
+          "!rounded-2xl !p-1 border border-zinc-200/60 dark:border-zinc-800 bg-white dark:bg-zinc-900",
+        item: "rounded-xl font-medium mx-1 my-0.5",
+      },
+    },
+    dropdownMenu: {
+      slots: {
+        content:
+          "!rounded-2xl !p-1 border border-zinc-200/60 dark:border-zinc-800 bg-white dark:bg-zinc-900",
+        item: "rounded-xl font-medium mx-1 my-0.5",
       },
     },
   },

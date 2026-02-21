@@ -47,7 +47,10 @@
         </div>
 
         <!-- List -->
-        <div class="flex-1 overflow-y-auto custom-scrollbar p-2 space-y-1">
+        <div
+          class="flex-1 overflow-y-auto custom-scrollbar p-2 space-y-1"
+          style="height: 500px"
+        >
           <div
             v-for="chat in filteredConversations"
             :key="chat._id"
@@ -141,12 +144,12 @@
     <div class="flex-1" :class="{ 'hidden md:flex': !selectedId }">
       <UCard
         v-if="selectedConversation"
-        class="h-[calc(100vh-100px)] flex flex-col flex-1 overflow-y-auto"
+        class="flex flex-col flex-1"
         :ui="{ body: { padding: 'p-0 h-full flex flex-col' } }"
       >
         <!-- Chat Header -->
         <header
-          class="p-4 border-b rounded-2xl sticky top-5 z-1000 border-zinc-100 dark:border-zinc-800 flex justify-between items-center bg-zinc-100 dark:bg-zinc-900/50 backdrop-blur-md shrink-0"
+          class="p-4 border-b rounded-2xl border-zinc-100 dark:border-zinc-800 flex justify-between items-center bg-zinc-100 dark:bg-zinc-900/50 backdrop-blur-md shrink-0"
         >
           <div class="flex items-center gap-2 md:gap-4 min-w-0">
             <!-- Back Button for Mobile -->
@@ -219,6 +222,7 @@
         <div
           ref="messageContainer"
           class="flex-1 overflow-y-auto p-4 md:p-6 space-y-4 custom-scrollbar"
+          style="height: 500px"
         >
           <!-- Manual Mode Warning -->
           <div
@@ -247,42 +251,7 @@
             </div>
           </div>
 
-          <div
-            v-for="(msg, i) in selectedConversation.messages"
-            :key="i"
-            class="flex flex-col group/msg"
-            :class="[msg.sender === 'customer' ? 'items-start' : 'items-end']"
-          >
-            <div
-              class="max-w-[85%] md:max-w-[70%] px-4 py-2.5 rounded-2xl md:rounded-[1.5rem] text-xs md:text-sm font-semibold transition-all duration-300"
-              :class="[
-                msg.sender === 'customer'
-                  ? 'bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 rounded-tl-none border border-zinc-100 dark:border-zinc-700 shadow-sm'
-                  : msg.sender === 'bot'
-                    ? 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 rounded-tr-none border border-zinc-200/50 dark:border-zinc-700/50 italic opacity-90'
-                    : 'bg-primary-500 text-white rounded-tr-none shadow-lg shadow-primary-500/20',
-              ]"
-            >
-              {{ msg.text }}
-            </div>
-            <div class="flex items-center gap-1.5 mt-1 px-1">
-              <span
-                class="text-[8px] font-black text-zinc-400 uppercase tracking-tighter"
-              >
-                {{ formatDateTime(msg.timestamp) }}
-              </span>
-              <span
-                v-if="msg.sender === 'bot'"
-                class="text-[8px] font-black text-primary-500 uppercase tracking-tighter"
-                >AI</span
-              >
-              <span
-                v-if="msg.sender === 'admin'"
-                class="text-[8px] font-black text-zinc-500 uppercase tracking-tighter"
-                >Admin</span
-              >
-            </div>
-          </div>
+          <ChatMessages :messages="selectedConversation.messages" />
         </div>
 
         <!-- Chat Input -->
@@ -717,11 +686,11 @@ onMounted(() => {
   background: transparent;
 }
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: #e4e4e7;
+  background: rgba(139, 92, 246, 0.2);
   border-radius: 10px;
 }
 .dark .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: #27272a;
+  background: rgba(139, 92, 246, 0.4);
 }
 .no-scrollbar::-webkit-scrollbar {
   display: none;

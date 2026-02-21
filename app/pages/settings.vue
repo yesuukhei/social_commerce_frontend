@@ -271,15 +271,67 @@
                   удирдах, AI туслахаа ажиллуулах боломжтой болно.
                 </p>
               </div>
-              <UButton
-                size="xl"
-                color="primary"
-                class="font-black px-12 h-14 rounded-2xl shadow-2xl shadow-primary-500/20 hover:scale-105 transition-transform"
-                @click="startFacebookFlow"
-                :loading="fbLoading"
-              >
-                Facebook-тэй холбох
-              </UButton>
+              <div class="flex flex-col items-center gap-4">
+                <UButton
+                  size="xl"
+                  color="primary"
+                  class="font-black px-12 h-14 rounded-2xl shadow-2xl shadow-primary-500/20 hover:scale-105 transition-transform"
+                  @click="startFacebookFlow()"
+                  :loading="fbLoading"
+                >
+                  Facebook-тэй холбох
+                </UButton>
+                <div
+                  v-if="!fbLoading"
+                  class="pt-2 flex flex-col items-center gap-3 w-full"
+                >
+                  <div
+                    v-if="showFBGuide"
+                    class="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800/50 p-4 rounded-3xl max-w-[400px] text-left animate-in fade-in slide-in-from-top-2"
+                  >
+                    <div class="flex items-start gap-3">
+                      <UIcon
+                        name="i-heroicons-information-circle"
+                        class="w-6 h-6 text-amber-500 shrink-0 mt-0.5"
+                      />
+                      <div class="space-y-2">
+                        <p
+                          class="text-xs font-black text-amber-900 dark:text-amber-200 uppercase tracking-tighter"
+                        >
+                          Заавар:
+                        </p>
+                        <p
+                          class="text-[11px] text-amber-700 dark:text-amber-400 leading-relaxed font-medium"
+                        >
+                          Facebook-ийн цонх нээгдэхэд заавал
+                          <b
+                            class="text-amber-900 dark:text-amber-100 underline decoration-amber-500/50"
+                            >"Edit previous settings"</b
+                          >
+                          (эсвэл "Тохиргоог засах") холбоосыг дарж, шинээр
+                          үүсгэсэн хуудсаа идэвхжүүлээрэй.
+                        </p>
+                        <UButton
+                          size="xs"
+                          color="amber"
+                          variant="solid"
+                          class="font-bold w-full rounded-xl mt-1"
+                          @click="startFacebookFlow(true)"
+                        >
+                          Ойлголоо, үргэлжлүүлэх
+                        </UButton>
+                      </div>
+                    </div>
+                  </div>
+                  <button
+                    v-else
+                    class="text-[10px] text-zinc-400 font-bold hover:text-primary-500 underline transition-colors"
+                    @click="showFBGuide = true"
+                  >
+                    Шинэ хуудсаа олж харахгүй байна уу?
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         </UCard>
@@ -302,10 +354,68 @@
               Google Sheets Холболт
             </h3>
           </template>
-          <div class="space-y-6">
-            <div class="space-y-3">
+          <div class="space-y-8">
+            <!-- Instructions & Guidance -->
+            <div
+              class="grid grid-cols-1 md:grid-cols-2 gap-6 pb-6 border-b border-zinc-100 dark:border-zinc-800"
+            >
+              <div class="space-y-4">
+                <h4
+                  class="text-sm font-black text-zinc-900 dark:text-white flex items-center gap-2"
+                >
+                  <span class="w-1.5 h-1.5 rounded-full bg-primary-500"></span>
+                  1. Эрх олгох
+                </h4>
+                <p class="text-xs text-zinc-500 font-medium leading-relaxed">
+                  Манай үйлчилгээний хаягийг Google Sheets-дээ
+                  <b>Editor</b> эрхээр нэмснээр AI бараа материалын мэдээллийг
+                  унших боломжтой болно.
+                </p>
+                <div
+                  class="bg-zinc-50 dark:bg-zinc-900/50 p-3 rounded-2xl border border-zinc-100 dark:border-zinc-800 flex items-center gap-2"
+                >
+                  <code
+                    class="flex-1 text-primary-600 font-bold text-[10px] truncate"
+                    >sheets-writer@order-bot-487704.iam.gserviceaccount.com</code
+                  >
+                  <UButton
+                    color="neutral"
+                    variant="subtle"
+                    size="xs"
+                    @click="copyEmail"
+                    >{{ copied ? "Хууллаа" : "Хуулах" }}</UButton
+                  >
+                </div>
+              </div>
+
+              <div class="space-y-4">
+                <h4
+                  class="text-sm font-black text-zinc-900 dark:text-white flex items-center gap-2"
+                >
+                  <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                  2. Стандарт баганууд
+                </h4>
+                <p class="text-xs text-zinc-500 font-medium leading-relaxed">
+                  Таны файл доорх багануудтай заавал байх ёстой. Мөн нэмэлт
+                  баганууд (Өнгө, Хэмжээ г.м) байж болно.
+                </p>
+                <div class="flex flex-wrap gap-1.5">
+                  <UBadge
+                    v-for="col in ['Нэр', 'Үнэ', 'Үлдэгдэл']"
+                    :key="col"
+                    variant="subtle"
+                    color="neutral"
+                    class="text-[9px] font-black uppercase tracking-tighter"
+                    >{{ col }}</UBadge
+                  >
+                </div>
+              </div>
+            </div>
+
+            <!-- URL Input -->
+            <div class="space-y-4">
               <label
-                class="text-xs font-bold uppercase tracking-wider text-zinc-500"
+                class="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400"
                 >Spreadsheet URL</label
               >
               <div class="flex flex-col sm:flex-row gap-3">
@@ -314,39 +424,16 @@
                   placeholder="https://docs.google.com/spreadsheets/d/..."
                   class="flex-1"
                   size="lg"
+                  :ui="{ rounded: 'rounded-2xl' }"
                 />
-                <UButton @click="testConnection" :loading="loading"
-                  >Холболт шалгах</UButton
+                <UButton
+                  size="lg"
+                  class="font-black px-8 rounded-2xl"
+                  @click="testConnection"
+                  :loading="loading"
                 >
-              </div>
-              <div
-                class="bg-zinc-50 dark:bg-zinc-900/50 p-4 rounded-2xl border border-zinc-100 dark:border-zinc-800"
-              >
-                <div class="flex items-start gap-3">
-                  <span
-                    class="material-symbols-rounded text-amber-500 text-lg mt-0.5"
-                    >info</span
-                  >
-                  <div class="space-y-2 flex-1">
-                    <p class="text-xs text-zinc-600 dark:text-zinc-400">
-                      Манай үйлчилгээний хаягийг Sheets-дээ <b>Editor</b> эрхээр
-                      нэмнэ үү:
-                    </p>
-                    <div class="flex flex-col sm:flex-row items-center gap-2">
-                      <code
-                        class="flex-1 bg-white dark:bg-zinc-800 px-3 py-2 rounded-xl text-primary-500 font-bold text-[11px] border border-zinc-100 dark:border-zinc-700"
-                        >sheets-writer@order-bot-487704.iam.gserviceaccount.com</code
-                      >
-                      <UButton
-                        color="neutral"
-                        variant="subtle"
-                        size="sm"
-                        @click="copyEmail"
-                        >{{ copied ? "Хууллаа!" : "Хуулах" }}</UButton
-                      >
-                    </div>
-                  </div>
-                </div>
+                  Холболт шалгах
+                </UButton>
               </div>
             </div>
 
@@ -356,29 +443,43 @@
               :description="status.message"
               :color="status.success ? 'success' : 'error'"
               variant="subtle"
+              class="rounded-3xl"
             />
 
+            <!-- AI Mapping Results -->
             <div
               v-if="analysisResult"
-              class="space-y-4 pt-4 border-t border-zinc-100 dark:border-zinc-800"
+              class="space-y-6 pt-6 border-t border-zinc-100 dark:border-zinc-800"
             >
               <div class="flex items-center justify-between">
-                <span
-                  class="text-[10px] font-black uppercase tracking-widest text-primary-500"
-                  >AI-ийн таамагласан бүтэц</span
-                >
-                <UBadge size="xs" color="primary" variant="subtle"
+                <div>
+                  <h4 class="text-sm font-black text-zinc-900 dark:text-white">
+                    Баганын холболт
+                  </h4>
+                  <p class="text-[11px] text-zinc-500 font-medium">
+                    AI таны хүснэгтийн бүтцийг ийнхүү таамаглалаа. Нэмэлт
+                    баганууд Бараа хуудсанд харагдана.
+                  </p>
+                </div>
+                <UBadge
+                  size="sm"
+                  color="primary"
+                  variant="subtle"
+                  class="font-black"
                   >{{ (analysisResult.mapping.confidence * 100).toFixed(0) }}%
-                  Confidence</UBadge
+                  ANALYSIS</UBadge
                 >
               </div>
-              <div class="grid grid-cols-2 sm:grid-cols-5 gap-3">
+
+              <div class="grid grid-cols-2 sm:grid-cols-5 gap-4">
                 <div
                   v-for="(col, key) in columnMapping"
                   :key="key"
-                  class="p-3 bg-zinc-50 dark:bg-zinc-900 rounded-xl border border-zinc-100 dark:border-zinc-800"
+                  class="p-4 bg-zinc-50 dark:bg-zinc-900 rounded-3xl border border-zinc-100 dark:border-zinc-800 transition-all hover:border-primary-500/30"
                 >
-                  <p class="text-[9px] font-bold text-zinc-400 uppercase mb-2">
+                  <p
+                    class="text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-3"
+                  >
                     {{
                       key === "name"
                         ? "Барааны нэр"
@@ -386,28 +487,18 @@
                           ? "Үнэ"
                           : key === "stock"
                             ? "Үлдэгдэл"
-                            : key === "category"
-                              ? "Төрөл"
-                              : "Тайлбар"
+                            : ""
                     }}
                   </p>
-                  <USelect
+                  <USelectMenu
                     v-model="columnMapping[key]"
                     :options="analysisResult.headers"
                     placeholder="Сонгох..."
-                    size="xs"
+                    size="sm"
                     class="w-full"
+                    :ui="{ rounded: 'rounded-xl' }"
                   />
                 </div>
-              </div>
-              <div
-                class="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-xl flex items-center justify-between"
-              >
-                <p class="text-[11px] text-blue-700 dark:text-blue-300">
-                  AI таны хүснэгтийг задлан шинжиллээ. Зөв бол баталгаажуулна
-                  уу.
-                </p>
-                <UButton size="xs" @click="confirmMapping">Зөв байна</UButton>
               </div>
             </div>
           </div>
@@ -444,8 +535,40 @@
               </div>
               <USwitch v-model="hasDelivery" />
             </div>
+
+            <!-- Case 1: Delivery is enabled -->
             <div
-              v-if="!hasDelivery"
+              v-if="hasDelivery"
+              class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4 border-t border-zinc-100 dark:border-zinc-800"
+            >
+              <div class="space-y-2">
+                <label
+                  class="text-[10px] font-black uppercase tracking-widest text-zinc-400"
+                  >Хүргэлтийн үнэ (₮)</label
+                >
+                <UInput
+                  v-model="deliveryFee"
+                  type="number"
+                  placeholder="0"
+                  size="lg"
+                />
+              </div>
+              <div class="space-y-2">
+                <label
+                  class="text-[10px] font-black uppercase tracking-widest text-zinc-400"
+                  >Хүргэлтийн хугацаа</label
+                >
+                <UInput
+                  v-model="deliveryTime"
+                  placeholder="24 цагийн дотор..."
+                  size="lg"
+                />
+              </div>
+            </div>
+
+            <!-- Case 2: Pickup only -->
+            <div
+              v-else
               class="space-y-3 pt-4 border-t border-zinc-100 dark:border-zinc-800"
             >
               <label
@@ -457,6 +580,114 @@
                 placeholder="Жишээ нь: Хүүхдийн ордны замын эсрэг талд..."
                 size="lg"
               />
+            </div>
+          </div>
+        </UCard>
+
+        <!-- Payment Settings -->
+        <UCard :ui="{ header: { base: 'bg-zinc-50/50 dark:bg-zinc-800/50' } }">
+          <template #header>
+            <h3
+              class="font-black text-xs uppercase tracking-widest text-zinc-900 dark:text-white flex items-center"
+            >
+              <div
+                class="w-10 h-10 rounded-2xl flex items-center justify-center bg-zinc-100/80 dark:bg-zinc-800 ring-1 ring-zinc-200/50 dark:ring-zinc-700 mr-3"
+              >
+                <span class="material-symbols-rounded text-xl"
+                  >account_balance</span
+                >
+              </div>
+              Төлбөр хүлээн авах
+            </h3>
+          </template>
+          <div class="space-y-6">
+            <div class="space-y-3">
+              <label
+                class="text-[10px] font-black uppercase tracking-widest text-zinc-400"
+                >Төлбөрийн хэлбэр</label
+              >
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <UButton
+                  :variant="paymentMethod === 'manual' ? 'solid' : 'outline'"
+                  color="primary"
+                  class="flex flex-col items-start gap-1 p-4 h-auto text-left"
+                  @click="paymentMethod = 'manual'"
+                >
+                  <div class="flex items-center gap-2">
+                    <UIcon
+                      name="i-heroicons-building-library"
+                      class="w-5 h-5"
+                    />
+                    <span class="font-bold text-sm">Дансаар</span>
+                  </div>
+                  <p class="text-[10px] opacity-70">
+                    AI данс өгөөд, утга сануулна. (Гар ажиллагаатай)
+                  </p>
+                </UButton>
+
+                <UButton
+                  :variant="paymentMethod === 'cash' ? 'solid' : 'outline'"
+                  color="primary"
+                  class="flex flex-col items-start gap-1 p-4 h-auto text-left"
+                  @click="paymentMethod = 'cash'"
+                >
+                  <div class="flex items-center gap-2">
+                    <span class="material-symbols-rounded text-xl"
+                      >payments</span
+                    >
+                    <span class="font-bold text-sm">Бэлнээр</span>
+                  </div>
+                  <p class="text-[10px] opacity-70">
+                    Хүргэлт дээр эсвэл очиж авахдаа бэлнээр төлөх.
+                  </p>
+                </UButton>
+              </div>
+              <p class="text-[10px] text-zinc-400 italic pt-2">
+                * QPay автомат төлбөрийн холболт удахгүй нэмэгдэнэ.
+              </p>
+            </div>
+
+            <div
+              v-if="paymentMethod === 'manual'"
+              class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-6 border-t border-zinc-100 dark:border-zinc-800"
+            >
+              <div class="space-y-2">
+                <label
+                  class="text-[10px] font-black uppercase tracking-widest text-zinc-400"
+                  >Банкны нэр</label
+                >
+                <UInput
+                  v-model="paymentDetails.bankName"
+                  placeholder="Хаан банк"
+                />
+              </div>
+              <div class="space-y-2">
+                <label
+                  class="text-[10px] font-black uppercase tracking-widest text-zinc-400"
+                  >Дансны дугаар</label
+                >
+                <UInput
+                  v-model="paymentDetails.accountNumber"
+                  placeholder="5000..."
+                />
+              </div>
+              <div class="space-y-2">
+                <label
+                  class="text-[10px] font-black uppercase tracking-widest text-zinc-400"
+                  >Хүлээгчийн нэр</label
+                >
+                <UInput
+                  v-model="paymentDetails.accountHolder"
+                  placeholder="Бат..."
+                />
+              </div>
+              <div class="space-y-2">
+                <label
+                  class="text-[10px] font-black uppercase tracking-widest text-zinc-400"
+                  >IBAN (Сонголтоор)</label
+                >
+                <UInput v-model="paymentDetails.iban" placeholder="MN..." />
+              </div>
             </div>
           </div>
         </UCard>
@@ -596,10 +827,19 @@ const columnMapping = ref({
   price: "",
   stock: "",
   category: "",
-  description: "",
 });
 const hasDelivery = ref(true);
 const pickupAddress = ref("");
+const deliveryFee = ref(0);
+const deliveryTime = ref("");
+const paymentDetails = ref({
+  bankName: "",
+  accountNumber: "",
+  accountHolder: "",
+  iban: "",
+});
+const paymentMethod = ref("manual");
+const showFBGuide = ref(false);
 const loading = ref(false);
 const saving = ref(false);
 const status = ref(null);
@@ -657,6 +897,17 @@ const loadSettings = async () => {
       }
       hasDelivery.value = response.data.hasDelivery ?? true;
       pickupAddress.value = response.data.pickupAddress || "";
+      deliveryFee.value = response.data.deliveryFee || 0;
+      deliveryTime.value = response.data.deliveryTime || "";
+      if (response.data.paymentDetails) {
+        paymentDetails.value = {
+          bankName: response.data.paymentDetails.bankName || "",
+          accountNumber: response.data.paymentDetails.accountNumber || "",
+          accountHolder: response.data.paymentDetails.accountHolder || "",
+          iban: response.data.paymentDetails.iban || "",
+        };
+      }
+      paymentMethod.value = response.data.paymentMethod || "manual";
       analysisResult.value = null; // Reset analysis on new store load
       status.value = null;
     }
@@ -687,7 +938,7 @@ const initFacebookSDK = () => {
   }
 };
 
-const startFacebookFlow = () => {
+const startFacebookFlow = (isRetry = false) => {
   if (!window.FB) {
     toast.add({
       title: "Алдаа",
@@ -698,33 +949,30 @@ const startFacebookFlow = () => {
   }
 
   fbLoading.value = true;
+  showFBGuide.value = false; // Hide guide when flow starts
 
-  // First check if already logged in and authorized
-  window.FB.getLoginStatus((response) => {
-    if (response.status === "connected") {
-      fetchAvailablePages(response.authResponse.accessToken);
+  const loginOptions = {
+    scope:
+      "pages_messaging,pages_show_list,pages_manage_metadata,public_profile",
+  };
+
+  // If retrying because a page is missing, force the settings dialog
+  if (isRetry) {
+    loginOptions.auth_type = "rerequest";
+  }
+
+  window.FB.login((loginRes) => {
+    if (loginRes.authResponse) {
+      fetchAvailablePages(loginRes.authResponse.accessToken);
     } else {
-      // Not connected, trigger login flow
-      window.FB.login(
-        (loginRes) => {
-          if (loginRes.authResponse) {
-            fetchAvailablePages(loginRes.authResponse.accessToken);
-          } else {
-            fbLoading.value = false;
-            toast.add({
-              title: "Цуцаллаа",
-              description: "Facebook нэвтрэлт цуцлагдлаа.",
-              color: "amber",
-            });
-          }
-        },
-        {
-          scope:
-            "pages_messaging,pages_show_list,pages_manage_metadata,public_profile",
-        },
-      );
+      fbLoading.value = false;
+      toast.add({
+        title: "Цуцаллаа",
+        description: "Facebook нэвтрэлт цуцлагдлаа.",
+        color: "amber",
+      });
     }
-  });
+  }, loginOptions);
 };
 
 const fetchAvailablePages = async (userToken) => {
@@ -819,15 +1067,6 @@ const analyzeSheet = async () => {
   }
 };
 
-const confirmMapping = () => {
-  toast.add({
-    title: "Баталгаажлаа",
-    description:
-      "Хүснэгтийн бүтцийг баталгаажууллаа. Хадгалах товчийг дарна уу.",
-    color: "primary",
-  });
-};
-
 const saveSettings = async () => {
   if (!selectedStoreId.value) return;
 
@@ -846,6 +1085,10 @@ const saveSettings = async () => {
         columnMapping: columnMapping.value,
         hasDelivery: hasDelivery.value,
         pickupAddress: pickupAddress.value,
+        deliveryFee: deliveryFee.value,
+        deliveryTime: deliveryTime.value,
+        paymentDetails: paymentDetails.value,
+        paymentMethod: paymentMethod.value,
       },
     });
 
@@ -960,19 +1203,32 @@ watch(
 );
 
 watch(
-  () => route.query.onboarding,
-  (val) => {
-    isWizardMode.value = val === "true";
-    if (isWizardMode.value) currentStep.value = 1;
+  () => [route.query.onboarding, route.query.wizard],
+  ([onboarding, wizard]) => {
+    isWizardMode.value = onboarding === "true" || wizard === "true";
+    if (isWizardMode.value) {
+      currentStep.value = 1;
+    }
   },
   { immediate: true },
 );
 
 const canGoNext = computed(() => {
-  if (currentStep.value === 1)
+  if (currentStep.value === 1) {
     return facebookPageId.value && facebookPageId.value !== "pending";
-  if (currentStep.value === 2)
-    return sheetUrl.value && columnMapping.value.name;
+  }
+
+  if (currentStep.value === 2) {
+    const hasUrl = !!sheetUrl.value;
+    const isAnalyzed = !!analysisResult.value;
+    const hasCriticalMappings =
+      columnMapping.value.name &&
+      columnMapping.value.price &&
+      columnMapping.value.stock;
+
+    return hasUrl && isAnalyzed && hasCriticalMappings;
+  }
+
   return true;
 });
 

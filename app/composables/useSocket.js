@@ -44,6 +44,11 @@ export const useSocket = () => {
     socket.value.on("conversation-updated", callback);
   };
 
+  const onOrderCreated = (callback) => {
+    if (!socket.value) connect();
+    socket.value.on("order-created", callback);
+  };
+
   const off = (event) => {
     if (socket.value) {
       socket.value.off(event);
@@ -57,6 +62,7 @@ export const useSocket = () => {
     leaveConversation,
     onNewMessage,
     onConversationUpdated,
+    onOrderCreated,
     off,
   };
 };

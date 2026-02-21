@@ -17,7 +17,17 @@
         <h1
           class="text-2xl font-black tracking-tight text-zinc-900 dark:text-white flex items-center gap-3"
         >
-          ID: #{{ id.slice(-6).toUpperCase() }}
+          Захиалгын мэдээлэл
+          <UBadge
+            size="xs"
+            variant="soft"
+            color="gray"
+            class="font-mono text-[10px] uppercase tracking-wider"
+          >
+            #{{ id.slice(-6).toUpperCase() }}
+          </UBadge>
+        </h1>
+        <div class="flex items-center gap-2">
           <UBadge
             size="sm"
             variant="subtle"
@@ -28,7 +38,7 @@
               order?.status === "completed" ? "Баталгаажсан" : "Хүлээгдэж буй"
             }}
           </UBadge>
-        </h1>
+        </div>
       </div>
       <div class="flex gap-3">
         <UButton
@@ -201,84 +211,106 @@
       <!-- 2. MIDDLE COLUMN: Contextual Chat -->
       <div class="lg:col-span-5 h-[700px] flex flex-col">
         <UCard
-          class="flex-1 overflow-hidden"
+          class="flex-1"
           :ui="{ body: { padding: 'p-0 h-full flex flex-col' } }"
         >
           <template #header>
-            <div class="flex justify-between items-center -m-1">
+            <div class="flex sticky top-5 justify-between items-center -m-1">
               <h3
                 class="text-xs font-black uppercase tracking-widest text-zinc-500 flex items-center gap-2"
               >
                 <span class="material-symbols-rounded text-sm">forum</span>
                 Чатны түүх
               </h3>
-              <UBadge
-                v-if="order.conversation?.currentIntent"
-                size="xs"
-                color="primary"
-                variant="soft"
-                class="font-black text-[9px] uppercase"
-              >
-                {{ order.conversation.currentIntent }}
-              </UBadge>
+              <div class="flex items-center gap-2">
+                <UBadge
+                  v-if="order.conversation?.currentIntent"
+                  size="xs"
+                  color="primary"
+                  variant="soft"
+                  class="font-black text-[9px] uppercase"
+                >
+                  {{ order.conversation.currentIntent }}
+                </UBadge>
+                <UButton
+                  v-if="order.conversation"
+                  variant="ghost"
+                  :color="order.conversation.isManualMode ? 'orange' : 'gray'"
+                  :icon="
+                    order.conversation.isManualMode
+                      ? 'material-symbols:smart-toy-off-outline'
+                      : 'material-symbols:smart-toy-outline'
+                  "
+                  size="xs"
+                  class="rounded-lg font-black text-[9px] uppercase tracking-tighter px-2 h-7"
+                  @click="toggleManualMode"
+                  :loading="togglingManual"
+                >
+                  {{ order.conversation.isManualMode ? "Manual" : "AI Live" }}
+                </UButton>
+              </div>
             </div>
           </template>
 
           <div
             ref="messageContainer"
-            class="flex-1 overflow-y-auto p-4 space-y-4 bg-zinc-50/30 dark:bg-zinc-950/20 custom-scrollbar"
+            class="flex-1 overflow-y-auto p-4 bg-zinc-50/30 dark:bg-zinc-950/20 custom-scrollbar"
+            style="height: 500px"
           >
             <div
-              v-if="!order.conversation?.messages?.length"
-              class="h-full flex flex-col items-center justify-center opacity-30"
-            >
-              <span class="material-symbols-rounded text-4xl mb-2"
-                >speaker_notes_off</span
-              >
-              <p class="text-xs font-bold">Мессеж олдсонгүй</p>
-            </div>
-
-            <div
-              v-for="(msg, i) in order.conversation?.messages"
-              :key="i"
-              class="flex flex-col"
-              :class="[msg.sender === 'customer' ? 'items-start' : 'items-end']"
+              v-if="order.conversation?.isManualMode"
+              class="bg-orange-50 dark:bg-orange-950/20 border border-orange-100 dark:border-orange-900/50 p-3 rounded-2xl flex items-center gap-3 mb-4"
             >
               <div
-                class="max-w-[85%] px-3 py-2 rounded-2xl text-[13px] font-medium shadow-sm transition-all"
-                :class="[
-                  msg.sender === 'customer'
-                    ? 'bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white rounded-tl-none border border-zinc-100 dark:border-zinc-700'
-                    : 'bg-primary-500 text-white rounded-tr-none',
-                ]"
+                class="w-8 h-8 rounded-full bg-orange-100 dark:bg-orange-900/50 flex items-center justify-center shrink-0"
               >
-                {{ msg.text }}
+                <span
+                  class="material-symbols-rounded text-orange-600 dark:text-orange-400 text-lg"
+                  >smart_toy</span
+                >
               </div>
-              <span
-                class="text-[8px] font-bold text-zinc-400 mt-1 uppercase tracking-tighter px-1"
-              >
-                {{ formatDate(msg.timestamp) }}
-              </span>
+              <div>
+                <p
+                  class="text-[11px] font-black text-orange-900 dark:text-orange-300 uppercase tracking-tighter"
+                >
+                  AI Түр зогссон (Manual Mode)
+                </p>
+                <p
+                  class="text-[10px] font-semibold text-orange-700 dark:text-orange-400 opacity-80"
+                >
+                  Энэ хэрэглэгчид AI хариулахгүй тул та гараар хариулна уу.
+                </p>
+              </div>
             </div>
+            <ChatMessages :messages="order.conversation?.messages" />
           </div>
 
-          <footer class="p-4 border-t border-zinc-100 dark:border-zinc-800">
-            <div class="flex gap-2">
-              <UInput
+          <footer
+            class="p-2 border-t rounded-full border-zinc-100 dark:border-zinc-800 bg-zinc-100 dark:bg-zinc-900 shrink-0 mx-4 mb-4"
+          >
+            <div class="flex items-end gap-2">
+              <UTextarea
                 v-model="adminMessage"
                 placeholder="Хариу бичих..."
+                autoresize
+                :rows="1"
+                :max-rows="4"
                 class="flex-1"
                 variant="none"
                 :ui="{
-                  wrapper: 'bg-zinc-100 dark:bg-zinc-800 rounded-xl px-2',
+                  wrapper:
+                    'bg-zinc-100 dark:bg-zinc-800/50 rounded-xl md:rounded-2xl ring-0 focus:ring-2 focus:ring-primary-500 p-1',
                 }"
-                @keydown.enter="sendAdminMessage"
+                @keydown.enter.prevent="sendAdminMessage"
               />
               <UButton
                 color="primary"
+                variant="solid"
                 icon="material-symbols:send"
-                class="rounded-xl shadow-lg shadow-primary-500/10"
+                size="md"
+                class="rounded-xl md:rounded-2xl h-[38px] md:h-[42px] px-4 shadow-lg shadow-primary-500/20"
                 :loading="sending"
+                :disabled="!adminMessage.trim()"
                 @click="sendAdminMessage"
               />
             </div>
@@ -311,9 +343,9 @@
                 {{ order.customer?.name }}
               </p>
               <p
-                class="text-[10px] font-bold text-zinc-500 truncate uppercase tracking-tighter"
+                class="text-[9px] font-black text-primary-500 truncate uppercase tracking-widest"
               >
-                ID: {{ order.customer?.facebookId }}
+                Facebook Messenger
               </p>
             </div>
           </div>
@@ -365,7 +397,7 @@
                     : 'text-amber-500'
                 "
               >
-                {{ (order.aiExtraction?.confidence * 100).toFixed(1) }}%
+                {{ ((order.aiExtraction?.confidence || 0) * 100).toFixed(1) }}%
               </span>
             </div>
             <div
@@ -373,7 +405,9 @@
             >
               <div
                 class="h-full bg-amber-500 rounded-full transition-all duration-1000"
-                :style="{ width: `${order.aiExtraction?.confidence * 100}%` }"
+                :style="{
+                  width: `${(order.aiExtraction?.confidence || 0) * 100}%`,
+                }"
               ></div>
             </div>
             <p
@@ -417,6 +451,7 @@ const adminMessage = ref("");
 const sending = ref(false);
 const approving = ref(false);
 const checkingPayment = ref(false);
+const togglingManual = ref(false);
 const messageContainer = ref(null);
 
 // Fetch order details
@@ -428,6 +463,10 @@ const { data, pending, refresh } = await useFetch(
 );
 
 const order = computed(() => data.value?.data);
+
+// Socket logic for real-time chat in order view
+const { connect, joinConversation, leaveConversation, onNewMessage, off } =
+  useSocket();
 
 const sendAdminMessage = async () => {
   if (
@@ -478,7 +517,42 @@ const approveOrder = async () => {
   } catch (err) {
     toast.add({ title: "Алдаа", description: err.data?.message, color: "red" });
   } finally {
-    approving.value = null;
+    approving.value = false;
+  }
+};
+
+const toggleManualMode = async () => {
+  if (!order.value?.conversation?._id || togglingManual.value) return;
+
+  togglingManual.value = true;
+  try {
+    const res = await $fetch(
+      `${config.public.apiBase}/conversations/${order.value.conversation._id}/toggle-manual`,
+      {
+        method: "PATCH",
+        headers: { Authorization: `Bearer ${token.value}` },
+      },
+    );
+
+    if (res.success) {
+      order.value.conversation.isManualMode = res.isManualMode;
+      toast.add({
+        title: res.isManualMode ? "AI Түр зогслоо" : "AI Идэвхжлээ",
+        description: res.isManualMode
+          ? "Та энэ хэрэглэгчтэй гараар харилцана уу."
+          : "AI хэрэглэгчид хариулж эхэлнэ.",
+        color: res.isManualMode ? "orange" : "green",
+      });
+      refresh();
+    }
+  } catch (error) {
+    toast.add({
+      title: "Алдаа гарлаа",
+      description: error.data?.message,
+      color: "red",
+    });
+  } finally {
+    togglingManual.value = false;
   }
 };
 
@@ -520,17 +594,62 @@ const formatDate = (date) => {
 };
 
 const scrollToBottom = () => {
-  if (messageContainer.value) {
-    messageContainer.value.scrollTop = messageContainer.value.scrollHeight;
-  }
+  nextTick(() => {
+    nextTick(() => {
+      if (messageContainer.value) {
+        messageContainer.value.scrollTop = messageContainer.value.scrollHeight;
+      }
+      setTimeout(() => {
+        if (messageContainer.value) {
+          messageContainer.value.scrollTo({
+            top: messageContainer.value.scrollHeight,
+            behavior: "smooth",
+          });
+        }
+      }, 300);
+    });
+  });
 };
 
 onMounted(() => {
-  if (order.value) nextTick(() => scrollToBottom());
+  connect();
+  if (order.value) {
+    nextTick(() => scrollToBottom());
+    if (order.value.conversation?._id) {
+      joinConversation(order.value.conversation._id);
+    }
+  }
+
+  onNewMessage((msg) => {
+    if (order.value?.conversation?._id === msg.conversationId) {
+      if (!order.value.conversation.messages) {
+        order.value.conversation.messages = [];
+      }
+      order.value.conversation.messages.push(msg);
+      scrollToBottom();
+    }
+  });
 });
 
-watch(order, (newVal) => {
+onUnmounted(() => {
+  off("new-message");
+  if (order.value?.conversation?._id) {
+    leaveConversation(order.value.conversation._id);
+  }
+});
+
+watch(order, (newVal, oldVal) => {
   if (newVal) nextTick(() => scrollToBottom());
+
+  if (
+    newVal?.conversation?._id &&
+    newVal.conversation._id !== oldVal?.conversation?._id
+  ) {
+    if (oldVal?.conversation?._id) {
+      leaveConversation(oldVal.conversation._id);
+    }
+    joinConversation(newVal.conversation._id);
+  }
 });
 </script>
 
@@ -542,10 +661,10 @@ watch(order, (newVal) => {
   background: transparent;
 }
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: #e4e4e7;
+  background: rgba(139, 92, 246, 0.2);
   border-radius: 10px;
 }
 .dark .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: #27272a;
+  background: rgba(139, 92, 246, 0.4);
 }
 </style>

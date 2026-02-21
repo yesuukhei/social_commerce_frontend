@@ -19,7 +19,7 @@
     </div>
 
     <div class="text-left">
-      <div class="flex items-center gap-3">
+      <div class="flex flex-col items-start gap-3">
         <span
           class="text-3xl font-black tracking-tight text-zinc-900 dark:text-white"
           >{{ value }}</span
@@ -39,14 +39,6 @@
           {{ Math.abs(trend) }}%
         </UBadge>
       </div>
-      <p
-        class="text-[11px] text-zinc-400 dark:text-zinc-500 font-bold mt-2 flex items-center"
-      >
-        <span
-          class="w-1 h-1 rounded-full bg-zinc-300 dark:bg-zinc-700 mr-2"
-        ></span>
-        {{ description || "Нийт статистик" }}
-      </p>
     </div>
   </UCard>
 </template>

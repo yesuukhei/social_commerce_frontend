@@ -5,9 +5,40 @@
       description="Таны AI туслах өнөөдөр захиалгуудыг автоматаар боловсруулахад бэлэн байна. Системийн төлөв хэвийн, бүх холболтууд идэвхтэй байна."
     />
 
+    <!-- Dashboard Filters -->
+    <div
+      class="flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+    >
+      <h2
+        class="text-sm font-black uppercase tracking-widest text-zinc-900 dark:text-white"
+      >
+        Үйл ажиллагааны тойм
+      </h2>
+      <div
+        class="flex items-center justify-between sm:justify-end gap-3 w-full sm:w-auto"
+      >
+        <span
+          class="text-[10px] font-bold text-zinc-400 uppercase tracking-widest"
+          >Хугацаа</span
+        >
+        <USelectMenu
+          v-model="selectedRange"
+          :items="rangeOptions"
+          class="w-full sm:w-48"
+          :ui="{ rounded: 'rounded-xl' }"
+        >
+          <template #label>
+            <span class="truncate text-xs font-bold">{{
+              selectedRange?.label || "Сонгох"
+            }}</span>
+          </template>
+        </USelectMenu>
+      </div>
+    </div>
+
     <!-- Loading State -->
     <div
-      v-if="pending"
+      v-if="pending || (selectedStoreId && !currentStore)"
       class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
     >
       <UCard
@@ -28,6 +59,169 @@
           ></div>
         </div>
       </UCard>
+    </div>
+
+    <!-- Launch Readiness Checklist (Only for Incomplete Setup) -->
+    <div
+      v-else-if="!isFullyConfigured"
+      class="bg-primary-500/5 dark:bg-primary-500/10 border border-primary-500/20 rounded-[40px] p-8 space-y-8 relative overflow-hidden group"
+    >
+      <!-- Glow Effect -->
+      <div
+        class="absolute -right-20 -top-20 w-80 h-80 bg-primary-500/20 rounded-full blur-[100px] pointer-events-none"
+      ></div>
+
+      <div
+        class="flex flex-col md:flex-row md:items-end justify-between gap-6 relative"
+      >
+        <div class="space-y-3">
+          <div
+            class="inline-flex items-center px-3 py-1 rounded-full bg-primary-500 text-white text-[10px] font-black uppercase tracking-widest"
+          >
+            ХУРДАН ЭХЛЭХ
+          </div>
+          <h2
+            class="text-3xl font-black text-zinc-900 dark:text-white tracking-tight"
+          >
+            Таны AI дэлгүүр
+            <span class="text-primary-600 dark:text-primary-400"
+              >ажиллахад бэлэн</span
+            >
+            байна уу?
+          </h2>
+          <p class="text-sm font-medium text-zinc-500 max-w-lg leading-relaxed">
+            AI туслах хэрэглэгчдийн захиалгыг автоматаар авч, нэхэмжлэх
+            үүсгэхийн тулд дараах 3 алхмыг дуусгах шаардлагатай:
+          </p>
+        </div>
+        <UButton
+          to="/settings?wizard=true"
+          size="xl"
+          class="font-black px-10 h-16 rounded-3xl shadow-2xl shadow-primary-500/20 hover:scale-105 transition-all"
+        >
+          <span class="material-symbols-rounded mr-2">rocket_launch</span>
+          Тохиргоог эхлүүлэх
+        </UButton>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 relative">
+        <!-- Step 1 -->
+        <div
+          class="p-6 rounded-3xl border transition-all"
+          :class="
+            currentStore?.facebookPageId
+              ? 'bg-emerald-500/5 border-emerald-500/20'
+              : 'bg-white/50 dark:bg-zinc-800/50 border-zinc-100 dark:border-zinc-800 shadow-sm'
+          "
+        >
+          <div class="flex items-center gap-3 mb-4">
+            <div
+              class="w-10 h-10 rounded-2xl flex items-center justify-center transition-all"
+              :class="
+                currentStore?.facebookPageId
+                  ? 'bg-emerald-500 text-white'
+                  : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-400'
+              "
+            >
+              <span class="material-symbols-rounded text-xl">{{
+                currentStore?.facebookPageId ? "check" : "facebook"
+              }}</span>
+            </div>
+            <span
+              class="text-[10px] font-black uppercase tracking-widest text-zinc-400"
+              >Алхам 1</span
+            >
+          </div>
+          <p class="font-black text-sm text-zinc-900 dark:text-white mb-1">
+            Facebook холбох
+          </p>
+          <p class="text-[11px] font-medium text-zinc-500">
+            {{
+              currentStore?.facebookPageId
+                ? "Амжилттай холбогдсон"
+                : "Хуудаснаас захиалга авч эхлэх"
+            }}
+          </p>
+        </div>
+
+        <!-- Step 2 -->
+        <div
+          class="p-6 rounded-3xl border transition-all"
+          :class="
+            currentStore?.googleSheetId
+              ? 'bg-emerald-500/5 border-emerald-500/20'
+              : 'bg-white/50 dark:bg-zinc-800/50 border-zinc-100 dark:border-zinc-800 shadow-sm'
+          "
+        >
+          <div class="flex items-center gap-3 mb-4">
+            <div
+              class="w-10 h-10 rounded-2xl flex items-center justify-center transition-all"
+              :class="
+                currentStore?.googleSheetId
+                  ? 'bg-emerald-500 text-white'
+                  : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-400'
+              "
+            >
+              <span class="material-symbols-rounded text-xl">{{
+                currentStore?.googleSheetId ? "check" : "leaderboard"
+              }}</span>
+            </div>
+            <span
+              class="text-[10px] font-black uppercase tracking-widest text-zinc-400"
+              >Алхам 2</span
+            >
+          </div>
+          <p class="font-black text-sm text-zinc-900 dark:text-white mb-1">
+            Барааны сан холбох
+          </p>
+          <p class="text-[11px] font-medium text-zinc-500">
+            {{
+              currentStore?.googleSheetId
+                ? "Google Sheets холбогдсон"
+                : "Барааны мэдээлэл болон үлдэгдэл"
+            }}
+          </p>
+        </div>
+
+        <!-- Step 3 -->
+        <div
+          class="p-6 rounded-3xl border transition-all"
+          :class="
+            hasProducts
+              ? 'bg-emerald-500/5 border-emerald-500/20'
+              : 'bg-white/50 dark:bg-zinc-800/50 border-zinc-100 dark:border-zinc-800 shadow-sm'
+          "
+        >
+          <div class="flex items-center gap-3 mb-4">
+            <div
+              class="w-10 h-10 rounded-2xl flex items-center justify-center transition-all"
+              :class="
+                hasProducts
+                  ? 'bg-emerald-500 text-white'
+                  : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-400'
+              "
+            >
+              <span class="material-symbols-rounded text-xl">{{
+                hasProducts ? "check" : "sync"
+              }}</span>
+            </div>
+            <span
+              class="text-[10px] font-black uppercase tracking-widest text-zinc-400"
+              >Алхам 3</span
+            >
+          </div>
+          <p class="font-black text-sm text-zinc-900 dark:text-white mb-1">
+            Бараа синхрончлох
+          </p>
+          <p class="text-[11px] font-medium text-zinc-500">
+            {{
+              hasProducts
+                ? "Бараанууд амжилттай татагдсан"
+                : "Анхны бараануудаа татаж авах"
+            }}
+          </p>
+        </div>
+      </div>
     </div>
 
     <!-- Stats Grid -->
@@ -81,8 +275,21 @@
           v-if="!recentOrders.length"
           icon="receipt_long"
           title="Захиалга алга байна"
-          description="Messenger чатбот идэвхжсэний дараа захиалгууд энд харагдана."
-        />
+          :description="
+            !currentStore?.facebookPageId
+              ? 'AI захиалга авч эхлэхийн тулд эхлээд Facebook хуудсаа холбоно уу.'
+              : 'Messenger чатбот идэвхжсэний дараа захиалгууд энд харагдана.'
+          "
+        >
+          <template #action v-if="!currentStore?.facebookPageId">
+            <UButton
+              to="/settings?wizard=true"
+              color="primary"
+              class="font-bold"
+              >Хуудас холбох</UButton
+            >
+          </template>
+        </EmptyState>
 
         <UTable v-else :data="recentOrders" :columns="orderColumns">
           <template #customer-cell="{ row }">
@@ -265,10 +472,11 @@
         </UTable>
       </UCard>
 
-      <!-- Quick Actions -->
+      <!-- Management Sidebar -->
       <div class="space-y-6">
+        <!-- Catalog Control -->
         <UCard
-          class="relative overflow-hidden"
+          class="relative overflow-hidden group border-primary-500/20"
           :ui="{ body: { padding: 'p-6' } }"
         >
           <!-- Premium Background Glow -->
@@ -279,12 +487,12 @@
           <header class="flex justify-between items-start mb-6">
             <div class="space-y-1">
               <h3
-                class="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400 dark:text-zinc-500 flex items-center"
+                class="text-[10px] font-black uppercase tracking-widest text-zinc-400 dark:text-zinc-500 flex items-center"
               >
                 <span
-                  class="w-1.5 h-1.5 rounded-full bg-primary-500 mr-2 animate-pulse"
+                  class="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-2 animate-pulse"
                 ></span>
-                AI Систем
+                Каталог холболт
               </h3>
               <p
                 class="text-xl font-bold text-zinc-900 dark:text-white tracking-tight"
@@ -293,57 +501,22 @@
               </p>
             </div>
             <div
-              class="w-10 h-10 rounded-2xl flex items-center justify-center transition-all duration-500 bg-zinc-100/80 dark:bg-zinc-800 ring-1 ring-zinc-200/50 dark:ring-zinc-700 group-hover:dark:ring-zinc-500 text-primary-500 dark:text-primary-400 group-hover:bg-primary-500 group-hover:text-white"
+              class="w-10 h-10 rounded-2xl flex items-center justify-center bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20"
             >
-              <span
-                class="material-symbols-rounded text-xl transition-transform duration-500 group-hover:scale-110"
-                >smart_toy</span
-              >
+              <span class="material-symbols-rounded text-xl">database</span>
             </div>
           </header>
 
-          <div class="space-y-4 mb-8">
-            <div class="flex items-center gap-3">
-              <div
-                class="w-8 h-8 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center shrink-0"
+          <div class="space-y-3 mb-6">
+            <div
+              class="flex items-center justify-between text-[11px] font-bold"
+            >
+              <span class="text-zinc-500 uppercase tracking-tighter"
+                >Нийт бараа</span
               >
-                <span class="material-symbols-rounded text-sm text-success-500"
-                  >check_circle</span
-                >
-              </div>
-              <div>
-                <p
-                  class="text-[11px] font-bold text-zinc-700 dark:text-zinc-300"
-                >
-                  Google Sheets Холболт
-                </p>
-                <p
-                  class="text-[10px] text-zinc-500 uppercase font-black tracking-tighter"
-                >
-                  Амжилттай холбогдсон
-                </p>
-              </div>
-            </div>
-            <div class="flex items-center gap-3">
-              <div
-                class="w-8 h-8 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center shrink-0"
-              >
-                <span class="material-symbols-rounded text-sm text-zinc-500"
-                  >history</span
-                >
-              </div>
-              <div>
-                <p
-                  class="text-[11px] font-bold text-zinc-700 dark:text-zinc-300"
-                >
-                  Синхрончлол
-                </p>
-                <p
-                  class="text-[10px] text-zinc-500 uppercase font-black tracking-tighter"
-                >
-                  Сүүлд: 14 минутын өмнө
-                </p>
-              </div>
+              <span class="text-zinc-900 dark:text-zinc-100">{{
+                data?.data?.productCount || "0"
+              }}</span>
             </div>
           </div>
 
@@ -351,72 +524,73 @@
             block
             size="lg"
             color="primary"
-            class="font-black !rounded-full py-4 shadow-xl shadow-primary-500/20 hover:shadow-primary-500/30 transition-all active:scale-[0.98]"
+            @click="syncFromSheets"
+            :loading="syncing"
           >
-            <span
-              class="material-symbols-rounded text-lg mr-2 group-hover:rotate-180 transition-transform duration-500"
-              >sync</span
-            >
-            Бараа шинэчлэх
+            <span class="material-symbols-rounded text-lg mr-2">sync_alt</span>
+            Каталог шинэчлэх
           </UButton>
         </UCard>
 
+        <!-- Operational Shortcuts -->
         <UCard :ui="{ body: { padding: 'p-6' } }">
           <h3
             class="font-black text-xs uppercase tracking-widest text-zinc-900 dark:text-white mb-4 flex items-center"
           >
             <div
-              class="w-10 h-10 rounded-2xl bg-zinc-100/80 dark:bg-zinc-800 ring-1 ring-zinc-200/50 dark:ring-zinc-700 flex items-center justify-center mr-3 transition-all duration-500 group-hover:dark:ring-zinc-500"
+              class="w-10 h-10 rounded-2xl bg-zinc-100/80 dark:bg-zinc-800 ring-1 ring-zinc-200/50 dark:ring-zinc-700 flex items-center justify-center mr-3"
             >
               <span
-                class="material-symbols-rounded text-xl text-zinc-600 dark:text-white transition-transform duration-500 group-hover:scale-110"
+                class="material-symbols-rounded text-xl text-zinc-600 dark:text-white"
                 >bolt</span
               >
             </div>
-            Хурдан холбоос
+            Хурдан үйлдэл
           </h3>
-          <div class="grid grid-cols-2 gap-3">
+          <div class="grid grid-cols-1 gap-2">
             <UButton
-              variant="outline"
-              color="gray"
-              class="flex-col h-20 group relative overflow-hidden"
-              @click="showSoonToast('Чат')"
+              to="/inbox"
+              variant="soft"
+              color="primary"
+              class="justify-start h-12 px-4 rounded-xl group"
             >
-              <div
-                class="absolute top-1 right-1 px-1.5 py-0.5 bg-zinc-100 dark:bg-zinc-800 rounded-md text-[7px] font-black uppercase tracking-tighter text-zinc-400 group-hover:text-primary-500 transition-colors"
+              <span
+                class="material-symbols-rounded text-lg mr-3 group-hover:scale-110 transition-transform"
+                >chat</span
               >
-                Тун удахгүй
-              </div>
-              <div
-                class="w-10 h-10 rounded-2xl bg-zinc-100/80 dark:bg-zinc-800 ring-1 ring-zinc-200/50 dark:ring-zinc-700 flex items-center justify-center mb-2 group-hover:bg-primary-500/10 transition-all duration-500 group-hover:dark:ring-zinc-500"
+              <span class="text-[11px] font-black uppercase tracking-widest"
+                >Чат нээх</span
               >
-                <span
-                  class="material-symbols-rounded text-xl text-zinc-500 dark:text-zinc-400 group-hover:text-primary-500 group-hover:scale-110 transition-all duration-500"
-                  >forum</span
-                >
-              </div>
-              <span class="text-xs font-semibold">Чатаар</span>
             </UButton>
+
             <UButton
-              variant="outline"
+              to="/orders"
+              variant="soft"
               color="gray"
-              class="flex-col h-20 group relative overflow-hidden"
-              @click="showSoonToast('Тайлан')"
+              class="justify-start h-12 px-4 rounded-xl group"
             >
-              <div
-                class="absolute top-1 right-1 px-1.5 py-0.5 bg-zinc-100 dark:bg-zinc-800 rounded-md text-[7px] font-black uppercase tracking-tighter text-zinc-400 group-hover:text-primary-500 transition-colors"
+              <span
+                class="material-symbols-rounded text-lg mr-3 group-hover:scale-110 transition-transform"
+                >add_shopping_cart</span
               >
-                Тун удахгүй
-              </div>
-              <div
-                class="w-10 h-10 rounded-2xl bg-zinc-100/80 dark:bg-zinc-800 ring-1 ring-zinc-200/50 dark:ring-zinc-700 flex items-center justify-center mb-2 group-hover:bg-primary-500/10 transition-all duration-500 group-hover:dark:ring-zinc-500"
+              <span class="text-[11px] font-black uppercase tracking-widest"
+                >Захиалга харах</span
               >
-                <span
-                  class="material-symbols-rounded text-xl text-zinc-500 dark:text-zinc-400 group-hover:text-primary-500 group-hover:scale-110 transition-all duration-500"
-                  >analytics</span
-                >
-              </div>
-              <span class="text-xs font-semibold">Тайлан</span>
+            </UButton>
+
+            <UButton
+              to="/settings"
+              variant="soft"
+              color="gray"
+              class="justify-start h-12 px-4 rounded-xl group"
+            >
+              <span
+                class="material-symbols-rounded text-lg mr-3 group-hover:scale-110 transition-transform"
+                >settings</span
+              >
+              <span class="text-[11px] font-black uppercase tracking-widest"
+                >Тохиргоо</span
+              >
             </UButton>
           </div>
         </UCard>
@@ -428,21 +602,80 @@
 <script setup>
 const config = useRuntimeConfig();
 const { user, token } = useAuth();
-const { selectedStoreId } = useStore();
+const { selectedStoreId, currentStore } = useStore();
+
+const isFullyConfigured = computed(() => {
+  const hasProducts = parseInt(data.value?.data?.productCount || "0") > 0;
+  return (
+    currentStore.value?.facebookPageId &&
+    currentStore.value?.googleSheetId &&
+    hasProducts
+  );
+});
+
+const hasProducts = computed(
+  () => parseInt(data.value?.data?.productCount || "0") > 0,
+);
+
+const rangeOptions = [
+  { label: "Өнөөдөр", value: "today" },
+  { label: "Өчигдөр", value: "yesterday" },
+  { label: "Сүүлийн 7 хоног", value: "last7" },
+  { label: "Сүүлийн 30 хоног", value: "last30" },
+  { label: "Энэ сар", value: "thisMonth" },
+];
+
+const selectedRange = ref(rangeOptions[0]); // Default to today
+
+const dateRange = computed(() => {
+  const now = new Date();
+  const start = new Date();
+  let end = new Date();
+
+  switch (selectedRange.value.value) {
+    case "today":
+      start.setHours(0, 0, 0, 0);
+      break;
+    case "yesterday":
+      start.setDate(now.getDate() - 1);
+      start.setHours(0, 0, 0, 0);
+      end.setDate(now.getDate() - 1);
+      end.setHours(23, 59, 59, 999);
+      break;
+    case "last7":
+      start.setDate(now.getDate() - 7);
+      break;
+    case "last30":
+      start.setDate(now.getDate() - 30);
+      break;
+    case "thisMonth":
+      start.setDate(1);
+      start.setHours(0, 0, 0, 0);
+      break;
+  }
+
+  return {
+    startDate: start.toISOString().split("T")[0],
+    endDate: end.toISOString().split("T")[0],
+  };
+});
 
 const { data, pending, error, refresh } = await useFetch(
   () => {
-    let url = `${config.public.apiBase}/stats`;
-    if (selectedStoreId.value) {
-      url += `?storeId=${selectedStoreId.value}`;
-    }
-    return url;
+    const params = new URLSearchParams();
+    if (selectedStoreId.value) params.append("storeId", selectedStoreId.value);
+    if (dateRange.value.startDate)
+      params.append("startDate", dateRange.value.startDate);
+    if (dateRange.value.endDate)
+      params.append("endDate", dateRange.value.endDate);
+
+    return `${config.public.apiBase}/stats?${params.toString()}`;
   },
   {
     headers: {
       Authorization: `Bearer ${token.value}`,
     },
-    watch: [selectedStoreId],
+    watch: [selectedStoreId, selectedRange],
   },
 );
 
@@ -470,6 +703,47 @@ const orderColumns = [
 
 const toast = useToast();
 const approvingId = ref(null);
+const syncing = ref(false);
+
+const syncFromSheets = async () => {
+  if (!selectedStoreId.value) {
+    toast.add({
+      title: "Мэдэгдэл",
+      description: "Бараа шинэчлэхийн тулд эхлээд дэлгүүрээ сонгоно уу.",
+      color: "amber",
+    });
+    return;
+  }
+
+  syncing.value = true;
+  try {
+    const response = await $fetch(`${config.public.apiBase}/sync/products`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token.value}`,
+      },
+      body: { storeId: selectedStoreId.value },
+    });
+
+    if (response.success) {
+      toast.add({
+        title: "Шинэчлэлт дууслаа",
+        description: `Барааны мэдээлэл Google Sheets-ээс амжилттай шинэчлэгдлээ.`,
+        color: "green",
+      });
+      refresh();
+    }
+  } catch (error) {
+    console.error("Sync failed:", error);
+    toast.add({
+      title: "Алдаа",
+      description: error.data?.message || "Шинэчлэхэд алдаа гарлаа.",
+      color: "red",
+    });
+  } finally {
+    syncing.value = false;
+  }
+};
 
 const approveOrder = async (id) => {
   approvingId.value = id;

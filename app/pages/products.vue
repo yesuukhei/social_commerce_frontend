@@ -16,7 +16,6 @@
       <div class="flex gap-3">
         <UButton
           variant="soft"
-          color="neutral"
           icon="material-symbols:sync"
           :loading="syncing"
           @click="syncFromSheets"
