@@ -138,7 +138,7 @@
     </div>
 
     <!-- Main Area: Chat Window -->
-    <div :class="{ 'hidden md:flex': !selectedId }">
+    <div class="flex-1" :class="{ 'hidden md:flex': !selectedId }">
       <UCard
         v-if="selectedConversation"
         class="h-[calc(100vh-100px)] flex flex-col flex-1 overflow-y-auto"
@@ -492,7 +492,7 @@ const loadConversationDetails = async (id) => {
     });
     if (res.success) {
       selectedConversation.value = res.data;
-      nextTick(() => scrollToBottom());
+      scrollToBottom();
     }
   } catch (error) {
     toast.add({
@@ -622,9 +622,22 @@ const getIntentColor = (intent) => {
 };
 
 const scrollToBottom = () => {
-  if (messageContainer.value) {
-    messageContainer.value.scrollTop = messageContainer.value.scrollHeight;
-  }
+  // Senior UX Strategy: Double nextTick for DOM settling + 300ms for media/delay
+  nextTick(() => {
+    nextTick(() => {
+      if (messageContainer.value) {
+        messageContainer.value.scrollTop = messageContainer.value.scrollHeight;
+      }
+      setTimeout(() => {
+        if (messageContainer.value) {
+          messageContainer.value.scrollTo({
+            top: messageContainer.value.scrollHeight,
+            behavior: "smooth",
+          });
+        }
+      }, 300);
+    });
+  });
 };
 
 onMounted(() => {
@@ -650,8 +663,21 @@ onMounted(() => {
     );
     if (index !== -1) {
       if (update.lastMessage) {
-        conversations.value[index].messages.push({ text: update.lastMessage });
         conversations.value[index].lastActivity = update.lastActivity;
+
+        // Push message to local list if not there
+        const msgExists = (conversations.value[index].messages || []).some(
+          (m) => m.text === update.lastMessage,
+        );
+        if (!msgExists) {
+          if (!conversations.value[index].messages)
+            conversations.value[index].messages = [];
+          conversations.value[index].messages.push({
+            text: update.lastMessage,
+            sender: "bot",
+            timestamp: update.lastActivity,
+          });
+        }
 
         // Mark as unread if not selected
         if (selectedId.value !== update.conversationId) {
@@ -664,8 +690,10 @@ onMounted(() => {
       if (update.isManualMode !== undefined)
         conversations.value[index].isManualMode = update.isManualMode;
     } else {
-      // New conversation appeared? Refresh whole list
-      refresh();
+      // New conversation appeared? Refresh whole list if it belongs to current store
+      if (!selectedStoreId.value || update.storeId === selectedStoreId.value) {
+        refresh();
+      }
     }
 
     // If selected conversation was updated

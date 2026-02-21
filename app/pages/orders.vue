@@ -374,8 +374,12 @@ const formatDateTime = (date) => {
 const { onConversationUpdated } = useSocket();
 onMounted(() => {
   onConversationUpdated((update) => {
-    // If a new order was created or status updated, refresh the list
-    if (update.status === "order_created" || update.lastMessage) {
+    // Refresh list if it's an order update for current store
+    const isNewOrder = update.status === "order_created";
+    const isRelevantStore =
+      !selectedStoreId.value || update.storeId === selectedStoreId.value;
+
+    if (isRelevantStore && (isNewOrder || update.lastMessage)) {
       refresh();
     }
   });
