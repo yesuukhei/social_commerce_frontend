@@ -148,12 +148,7 @@
               <div
                 class="w-10 h-10 rounded-2xl bg-white dark:bg-zinc-800 shadow-sm flex items-center justify-center border border-zinc-100 dark:border-zinc-700"
               >
-                <img
-                  v-if="order.paymentMethod === 'qpay'"
-                  src="https://qpay.mn/logo.png"
-                  class="w-6 h-6 grayscale opacity-50"
-                />
-                <span v-else class="material-symbols-rounded text-zinc-400"
+                <span class="material-symbols-rounded text-zinc-400"
                   >account_balance</span
                 >
               </div>
@@ -179,31 +174,6 @@
                 </p>
               </div>
             </div>
-            <UButton
-              v-if="
-                order.paymentStatus !== 'paid' && order.paymentMethod === 'qpay'
-              "
-              size="xs"
-              variant="soft"
-              color="blue"
-              class="font-black"
-              :loading="checkingPayment"
-              @click="checkPayment"
-              >Шалгах</UButton
-            >
-          </div>
-
-          <div
-            v-if="order.paymentDetails?.qrCode"
-            class="flex flex-col items-center p-4 bg-white dark:bg-zinc-800 rounded-2xl border border-zinc-100 dark:border-zinc-700"
-          >
-            <img :src="order.paymentDetails.qrCode" class="w-40 h-40 mb-3" />
-            <p
-              class="text-[9px] font-black text-zinc-400 uppercase text-center leading-relaxed"
-            >
-              Инвойс ID: {{ order.paymentDetails.invoiceId }}<br />
-              QPay QR кодоор төлбөр шалгах
-            </p>
           </div>
         </UCard>
       </div>

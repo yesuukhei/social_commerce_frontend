@@ -441,21 +441,7 @@
               >
                 Дэлгэрэнгүй
               </UButton>
-              <UButton
-                v-if="
-                  row.original.status === 'pending' &&
-                  row.original.paymentMethod === 'qpay' &&
-                  row.original.paymentStatus !== 'paid'
-                "
-                size="xs"
-                color="blue"
-                variant="soft"
-                class="font-black justify-center rounded-lg w-full"
-                :loading="checkingPaymentId === row.original._id"
-                @click="checkPayment(row.original._id)"
-              >
-                Төлбөр шалгах
-              </UButton>
+
               <UButton
                 v-if="row.original.status === 'pending'"
                 size="xs"
