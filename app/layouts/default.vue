@@ -293,7 +293,7 @@ onMounted(async () => {
 
     // Redirect to settings if no store exists
     if (stores.value.length === 0 && useRoute().path !== "/settings") {
-      navigateTo("/settings");
+      navigateTo("/settings?wizard=true");
     }
   }
 });
