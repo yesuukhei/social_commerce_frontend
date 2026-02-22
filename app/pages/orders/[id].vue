@@ -156,7 +156,7 @@
                 <p
                   class="text-xs font-black text-zinc-900 dark:text-white uppercase"
                 >
-                  {{ order.paymentMethod || "Бэлнээр" }}
+                  {{ order.paymentMethod === "manual" ? "Дансаар" : "Бэлнээр" }}
                 </p>
                 <p
                   class="text-[10px] font-bold"
