@@ -1,4 +1,5 @@
 import { io } from "socket.io-client";
+import { ref } from "vue";
 
 const socket = ref(null);
 
@@ -18,8 +19,12 @@ export const useSocket = () => {
       console.log("🔌 Connected to WebSocket server");
     });
 
-    socket.value.on("disconnect", () => {
-      console.log("🔌 Disconnected from WebSocket server");
+    socket.value.on("connect_error", (error) => {
+      console.error("❌ Socket connection error:", error);
+    });
+
+    socket.value.on("disconnect", (reason) => {
+      console.log("🔌 Disconnected from WebSocket server:", reason);
     });
   };
 
