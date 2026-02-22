@@ -291,9 +291,9 @@ onMounted(async () => {
   if (user.value) {
     await fetchStores();
 
-    // Redirect to settings if no store exists
+    // New user with no stores → send to settings (onboarding screen)
     if (stores.value.length === 0 && useRoute().path !== "/settings") {
-      navigateTo("/settings?wizard=true");
+      navigateTo("/settings");
     }
   }
 });
